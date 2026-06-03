@@ -24,16 +24,6 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Clean and Recreate Android Project
-      run: |
-        rm -rf android
-        flutter create . --platforms=android
-
-    - name: Force SDK 34 via Local Properties
-      run: |
-        echo "flutter.compileSdkVersion=34" >> android/local.properties
-        echo "flutter.targetSdkVersion=34" >> android/local.properties
-
     - name: Install dependencies
       run: flutter pub get
 
