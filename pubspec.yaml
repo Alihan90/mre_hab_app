@@ -1,5 +1,5 @@
 name: amre_hab_app
-description: "A new Flutter project."
+description: "Повноцінний комплексний додаток для фізичних терапевтів"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   share_plus: ^7.2.1
+  sensors_plus: ^6.1.1 # Для роботи гоніометра через акселерометр
+  intl: ^0.19.0        # Для форматування дат у виписках
 
 dev_dependencies:
   flutter_test:
