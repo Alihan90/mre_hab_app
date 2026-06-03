@@ -17,7 +17,7 @@ class RehabilitationApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Асистент Фізичного Терапевта',
+      title: "Асистент Фізичного Терапевта",
       debugShowCheckedModeBanner: false,
       supportedLocales: const [
         Locale('uk', 'UA'),
@@ -49,17 +49,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   // Єдине глобальне сховище пацієнтів на рівні всього додатка
   final List<Patient> _globalPatients = [
     Patient(
-      id: '1',
-      name: 'Іваненко Петро Миколайович',
-      birthDate: '14.05.1974',
-      diagnosisMkh10: '[I63] Інфаркт мозку (Ішемічний інсульт)',
-      admissionDate: '20.05.2026',
+      id: "1",
+      name: "Іваненко Петро Миколайович",
+      birthDate: "14.05.1974",
+      diagnosisMkh10: "[I63] Інфаркт мозку (Ішемічний інсульт)",
+      admissionDate: "20.05.2026",
       irp: IrpPlan(
-        goalsSmart: 'Збільшити силу в паретичній правій нозі до 4 балів за MRC та самостійно проходити 50 метров без опори до 15.07.2026.',
-        mfkCodes: 'b730.2 (Помірне порушення сили м\'язів однієї половини тіла), d450.1 (Легке ускладнення ходьби).',
-        rehabilitationCycle: 'Первинний',
-        interventionPlan: 'Кінезіотерапія за методикою PNF, ортостатичні тренування, відновлення дрібної моторики кисті.',
-        specialistName: 'Ковальчук О.В.',
+        goalsSmart: "Збільшити силу в паретичній правій нозі до 4 балів за MRC та самостійно проходити 50 метров без опори до 15.07.2026.",
+        mfkCodes: "b730.2 (Помірне порушення сили м'язів однієї половини тіла), d450.1 (Легке ускладнення ходьби).",
+        rehabilitationCycle: "Первинний",
+        interventionPlan: "Кінезіотерапія за методикою PNF, ортостатичні тренування, відновлення дрібної моторики кисті.",
+        specialistName: "Ковальчук О.В.",
       ),
     ),
   ];
@@ -76,8 +76,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Робочий стіл реабілітації', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-            Text('Комплексна автоматизованаシステム', style: TextStyle(fontSize: 12, color: Colors.white70)),
+            Text("Робочий стіл реабілітації", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            Text("Комплексна автоматизована система", style: TextStyle(fontSize: 12, color: Colors.white70)),
           ],
         ),
         backgroundColor: Colors.blue.shade700,
@@ -104,12 +104,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Протоколи МОЗ України',
+                            "Протоколи МОЗ України",
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.blue.shade900),
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            'Автоматична калькуляція шкал, побудова Індивідуального реабілітаційного плану та швидкий експорт документів.',
+                            "Автоматична калькуляція шкал, побудова Індивідуального реабілітаційного плану та швидкий експорт документів.",
                             style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.3),
                           ),
                         ],
@@ -122,7 +122,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             const SizedBox(height: 20),
             
             const Text(
-              'Функціональні модулі системи:',
+              "Функціональні модулі системи:",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black54),
             ),
             const SizedBox(height: 10),
@@ -136,40 +136,40 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                 children: [
                   _buildMenuCard(
                     context,
-                    title: 'Карти пацієнтів',
-                    subtitle: 'Журнал візитів, тестування (16 шкал), звіти',
+                    title: "Карти пацієнтів",
+                    subtitle: "Журнал візитів, тестування (16 шкал), звіти",
                     icon: Icons.assignment_ind,
                     color: Colors.blue.shade600,
                     destination: const PatientsScreen(),
                   ),
                   _buildMenuCard(
                     context,
-                    title: 'Конструктор ІРП / МКФ',
-                    subtitle: 'Цілі SMART та funktionальний діагноз',
+                    title: "Конструктор ІРП / МКФ",
+                    subtitle: "Цілі SMART та функціональний діагноз",
                     icon: Icons.gavel,
                     color: Colors.teal.shade600,
                     destination: IrpGlobalScreen(patients: _globalPatients, onUpdate: _refreshGlobalState),
                   ),
                   _buildMenuCard(
                     context,
-                    title: 'База вправ',
-                    subtitle: 'Мобілізація, вертикалізація, дозування',
+                    title: "База вправ",
+                    subtitle: "Мобілізація, вертикалізація, дозування",
                     icon: Icons.fitness_center,
                     color: Colors.green.shade600,
                     destination: const ExercisesScreen(),
                   ),
                   _buildMenuCard(
                     context,
-                    title: 'Гоніометрія (ROM)',
-                    subtitle: 'Вимірювач та анатомічний довідник',
+                    title: "Гоніометрія (ROM)",
+                    subtitle: "Вимірювач та анатомічний довідник",
                     icon: Icons.screen_rotation,
                     color: Colors.orange.shade700,
                     destination: const GoniometerScreen(),
                   ),
                   _buildMenuCard(
                     context,
-                    title: 'Довідник МКХ-10',
-                    subtitle: 'Клінічні коди та кастомний ввід',
+                    title: "Довідник МКХ-10",
+                    subtitle: "Клінічні коди та кастомний ввід",
                     icon: Icons.library_books,
                     color: Colors.purple.shade600,
                     destination: const Mkh10Screen(),
@@ -256,65 +256,48 @@ class ClinicalScale {
 class ClinicalScalesData {
   static const List<ClinicalScale> allScales = [
     ClinicalScale(
-      id: 'mrc',
-      name: 'MRC-SumScore',
-      purpose: 'Оцінка сили скелетних м\'язів у пацієнтів з неврологічними або руховими порушеннями.',
-      method: 'Тестуються 6 м\'язових груп з обох боків (відділення плеча, згинання передпліччя, розгинання кисті, згинання стегна, розгинання коліна, тильне згинання стопи). Кожна група оцінюється від 0 (немає скорочень) до 5 (нормальна сила). Максимальна сума — 60 балів.',
+      id: "mrc",
+      name: "MRC-SumScore",
+      purpose: "Оценочна шкала для вимірювання сили скелетних м'язів у пацієнтів з руховими порушеннями.",
+      method: "Тестуються 6 м'язових груп симетрично з обох боків. Кожна група оцінюється від 0 (відсутність скорочення) до 5 (нормальна чила). Максимальна сума становить 60 балів.",
     ),
     ClinicalScale(
-      id: 'bbs',
-      name: 'Berg Balance Scale (BBS)',
-      purpose: 'Клінічна оцінка статичного та динамічного балансу, а також визначення ризику падіння.',
-      method: 'Включає 14 стандартних завдань (вставання зі стільця, стояння без опори, заплющені очі, повороти на 360 градусів, перенесення ваги тощо). Кожне завдання оцінюється від 0 до 4 балів. Максимум 56 балів (менше 45 — високий ризик падінь).',
+      id: "bbs",
+      name: "Berg Balance Scale (BBS)",
+      purpose: "Клінічна оцінка статичного та динамічного балансу, а також визначення ризику падіння.",
+      method: "Включає 14 стандартних завдань (вставання, стояння без опори, заплющені очі, повороти тощо). Кожне завдання оцінюється від 0 до 4 балів. Максимум 56 балів.",
     ),
     ClinicalScale(
-      id: 'rmi',
-      name: 'Rivermead Mobility Index (RMI)',
-      purpose: 'Оцінка рівня мобільності та базових рухових навичок у повсякденному житті.',
-      method: 'Складається з 14 питань до пацієнта/родичів та 1 візуального тесту (стояння протягом 10 сек). Охоплює діапазон від повертання в ліжку до підйому по сходах. За кожне «так» нараховується 1 бал. Максимум — 15 балів.',
+      id: "rmi",
+      name: "Rivermead Mobility Index (RMI)",
+      purpose: "Оцінка рівня мобільності та базових рухових навичок у повсякденному житті.",
+      method: "Складається з 14 питань до пацієнта та 1 візуального тесту на стояння. Охоплює діапазон від повертання в ліжку до підйому по сходах. За кожне 'так' — 1 бал. Максимум — 15 балів.",
     ),
     ClinicalScale(
-      id: 'bi',
-      name: 'Barthel Index (BI)',
-      purpose: 'Оцінка ступеня повсякденної незалежності пацієнта та потреби у сторонньому догляді.',
-      method: 'Аналізуються 10 функцій (харчування, особиста гігієна, відвідування туалету, пересування в кріслі/ліжку, контроль сфінктерів тощо). Оцінка варіюється від 0 до 100 балів. Нижчі бали вказують на більшу залежність.',
+      id: "bi",
+      name: "Barthel Index (BI)",
+      purpose: "Оцінка ступеня повсякденної незалежності пацієнта та потреби у сторонньому догляді.",
+      method: "Аналізуються 10 функцій життєдіяльності (харчування, гігієна, пересування тощо). Оцінка варіюється від 0 до 100 балів. Нижчі бали вказують на більшу залежність.",
     ),
     ClinicalScale(
-      id: 'fim',
-      name: 'FIM (Functional Independence Measure)',
-      purpose: 'Комплексне вимірювання фізичної та когнітивної самостійності в процесі реабілітації.',
-      method: 'Оцінюється 18 сфер (13 рухових та 5 когнітивних, включаючи спілкування і соціальну адаптацію). Застосовується 7-бальна шкала для кожного пункту (від повної залежності до повної самостійності). Загальний бал від 18 до 126.',
+      id: "fim",
+      name: "FIM (Functional Independence Measure)",
+      purpose: "Комплексне вимірювання фізичної та когнітивної самостійності в процесі реабілітації.",
+      method: "Оцінюється 18 сфер (13 рухових та 5 когнітивних). Застосовується 7-бальна шкала для кожного пункту (від повної залежності до повної самостійності). Загальний бал від 18 до 126.",
     ),
     ClinicalScale(
-      id: '6mwt',
-      name: '6-Minute Walk Test (6MWT)',
-      purpose: 'Оцінка аеробної спроможності, витривалості серцево-судинної та дихальної систем.',
-      method: 'Пацієнту пропонується пройти якомога більшу відстань у комфортному темпі по прямій трасі (30 м) за 6 хвилин. Дозволені зупинки та використання засобів опори. Фіксується загальний метраж, ЧСС та рівень задишки за Боргом.',
+      id: "6mwt",
+      name: "6-Minute Walk Test (6MWT)",
+      purpose: "Оцінка аеробної спроможності, витривалості серцево-судинної та дихальної систем.",
+      method: "Пацієнту пропонується пройти якомога більшу відстань у комфортному темпі за 6 хвилин. Дозволені зупинки. Фіксується загальний метраж, ЧСС та рівень задишки.",
     ),
     ClinicalScale(
-      id: 'tug',
-      name: 'Timed Up and Go (TUG)',
-      purpose: 'Експрес-оцінка динамічного балансу, швидкості ходьби та базової мобільності.',
-      method: 'Пацієнт за командою встає зі стільця, проходить 3 метри вперед, розвертається, повертається назад і сідає на стілець. Час заміряється секундоміром. Час > 12-13.5 секунд свідчить про високий ризик падінь.',
+      id: "tug",
+      name: "Timed Up and Go (TUG)",
+      purpose: "Експрес-оцінка динамічного балансу, швидкості ходьби та базової мобільності.",
+      method: "Пацієнт за командою встає зі стільця, проходить 3 метри вперед, розвертається, повертається назад і сідає на стілець. Час заміряється секундоміром.",
     ),
     ClinicalScale(
-      id: 'poma',
-      name: 'Tinetti Performance Oriented Mobility Assessment (POMA)',
-      purpose: 'Специфічна оцінка ходьби та рівноваги для визначення рухового дефіциту.',
-      method: 'Складається з двох секцій: баланс (9 завдань, макс. 16 балів) і ходьба (8 параметрів, макс. 12 балів). Сумарна оцінка — 28 балів. Результат менше 19 балів вказує на критично високий ризик травматизації.',
-    ),
-    ClinicalScale(
-      id: 'dgi',
-      name: 'Dynamic Gait Index (DGI)',
-      purpose: 'Аналіз здатності пацієнта адаптувати ходьбу до зміни зовнішніх умов та вимог.',
-      method: 'Терапевт оцінює 8 завдань під час локомоції: зміна швидкості ходьби, повороти голови по горизонталі/вертикалі, переступання та обхід перешкод, підйом по сходах. Оцінка від 0 до 24 балів.',
-    ),
-    ClinicalScale(
-      id: 'fma',
-      name: 'Fugl-Meyer Assessment (FMA)',
-      purpose: 'Глибока кількісна оцінка рухового відновлення, рефлексів та чутливості після інсульту.',
-      method: 'Детальний огляд, що оцінює окремо верхню (макс. 66 балів) та нижню кінцівку (макс. 34 бали), координацію, рефлекторну діяльність та пасивний об\'єм рухів у суглобах.',
-    ),
-    ClinicalScale(
-      id: 'mas',
-      name: 'Modified Ashworth
+      id: "poma",
+      name: "Tinetti Performance Oriented Mobility Assessment (POMA)",
+      purpose: "Специфічна оцінка ходьби та рівноваги для визначення рухового дефіциту
