@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:sensors_plus/sensors_plus.dart';
 
-// Модель даних для анатомічної норми суглоба
 class JointNorm {
   final String jointName;
   final String movementType;
@@ -31,9 +30,7 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
   double _calculatedRom = 0.0;
   dynamic _accelerometerSubscription;
 
-  // Капітальна база даних клінічних норм гоніометрії (AAOS стандарти)
   final List<JointNorm> _jointNorms = const [
-    // ПЛЕЧОВИЙ СУГЛОБ
     JointNorm(
       jointName: 'Плечовий суглоб',
       movementType: 'Згинання (Flexion)',
@@ -50,9 +47,8 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
       jointName: 'Плечовий суглоб',
       movementType: 'Відведення (Abduction)',
       normalRom: '0° – 180°',
-      Instructions: 'Вісь: задній бік суглоба, центр голівки. Рухоме плече паралельно хребту.',
+      Instructions: 'Вісь: задній бік суглоба, centre голівки. Рухоме плече паралельно хребту.',
     ),
-    // ЛІКТЬОВИЙ СУГЛОБ
     JointNorm(
       jointName: 'Ліктьовий суглоб',
       movementType: 'Згинання / Розгинання',
@@ -65,7 +61,6 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
       normalRom: '80° (пронація) / 80° (супінація)',
       Instructions: 'Пацієнт тримає ручку. Вісь: поздовжня вісь через третій палець кисті.',
     ),
-    // КУЛЬШОВИЙ СУГЛОБ
     JointNorm(
       jointName: 'Кульшовий суглоб',
       movementType: 'Згинання (пряма нога)',
@@ -78,14 +73,12 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
       normalRom: '0° – 45°',
       Instructions: 'Вісь: передня верхня клубова ость (SIAS). Рухоме плече спрямоване на колінну чашечку.',
     ),
-    // КОЛІННИЙ СУГЛОБ
     JointNorm(
       jointName: 'Колінний суглоб',
       movementType: 'Згинання (Flexion)',
       normalRom: '0° (повне розгинання) – 135°-145°',
       Instructions: 'Вісь: латеральний виросток стегна. Опора: великий вертлюг. Рухоме плече: до латеральної кісточки гомілки.',
     ),
-    // ГОМІЛКОВОСТОПНИЙ СУГЛОБ
     JointNorm(
       jointName: 'Гомілковостопний суглоб',
       movementType: 'Тильне згинання (Dorsiflexion)',
@@ -145,7 +138,6 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
         length: 2,
         child: Column(
           children: [
-            // Вкладки: Інструмент вимірювання та Довідник суглобів
             Container(
               color: Colors.orange.shade50,
               child: const TabBar(
@@ -161,10 +153,7 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // --- ВКЛАДКА 1: ЦИФРОВИЙ ДАТЧИК ---
                   _buildGoniometerTool(),
-                  
-                  // --- ВКЛАДКА 2: КЛІНІЧНИЙ ДОВІДНИК УСІХ СУГЛОБІВ ---
                   _buildJointsDirectory(),
                 ],
               ),
@@ -175,7 +164,6 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
     );
   }
 
-  // Віджет самого цифрового вимірювача
   Widget _buildGoniometerTool() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -189,7 +177,7 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
               child: Text(
                 'Зафіксуйте старт на проксимальному сегменті суглоба, проведіть рух кінцівки та зафіксуйте фініш. Порівняйте отриманий ROM з нормативами у сусідній вкладці.',
                 style: TextStyle(fontSize: 12, color: Colors.black87),
-                textAlign: Center,
+                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -224,7 +212,7 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
                 children: [
                   Column(children: [const Text('Старт', style: TextStyle(fontSize: 12)), Text(_startAngle != null ? '$_startAngle°' : '--', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue))]),
                   Container(width: 1, height: 30, color: Colors.grey.shade300),
-                  Column(children: [const Text('Фініш', style: TextStyle(fontSize: 12)), Text(_endAngle != null ? '$_endAngle°' : '--', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple))]),
+                  Column(children: [const Text('Финіш', style: TextStyle(fontSize: 12)), Text(_endAngle != null ? '$_endAngle°' : '--', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple))]),
                   Container(width: 1, height: 30, color: Colors.grey.shade300),
                   Column(children: [const Text('Чистий ROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), Text('$_calculatedRom°', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green))]),
                 ],
@@ -266,7 +254,6 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
     );
   }
 
-  // Віджет повного клінічного довідника суглобів
   Widget _buildJointsDirectory() {
     return ListView.builder(
       itemCount: _jointNorms.length,
