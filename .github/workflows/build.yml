@@ -27,6 +27,12 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Global SDK 34 Override
+      run: |
+        # Цей скрипт знаходить дефолтні налаштування Flutter і примусово каже збирати все під SDK 34
+        find . -name "build.gradle" -eval sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' {} \;
+        find . -name "build.gradle" -eval sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' {} \;
+
     - name: Build APK
       run: flutter build apk --release --no-tree-shake-icons
 
