@@ -24,10 +24,15 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Repair Android structure
+    - name: Repair Android structure with SDK 34
       run: |
         rm -rf android
         flutter create . --platforms=android
+
+    - name: Force Compile SDK to 34
+      run: |
+        sed -i 's/compileSdk = .*/compileSdk = 34/g' android/app/build.gradle || sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' android/app/build.gradle
+        sed -i 's/targetSdk = .*/targetSdk = 34/g' android/app/build.gradle || sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' android/app/build.gradle
 
     - name: Install dependencies
       run: flutter pub get
