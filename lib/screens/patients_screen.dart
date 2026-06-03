@@ -13,7 +13,6 @@ class PatientsScreen extends StatefulWidget {
 }
 
 class _PatientsScreenState extends State<PatientsScreen> {
-  // Локальний список пацієнтів з одним демонстраційним клінічним випадком
   final List<Patient> _patients = [
     Patient(
       id: '1',
@@ -31,7 +30,6 @@ class _PatientsScreenState extends State<PatientsScreen> {
     ),
   ];
 
-  // Контролери для створення нової картки пацієнта
   final _nameController = TextEditingController();
   final _birthController = TextEditingController();
   final _admissionController = TextEditingController();
@@ -160,9 +158,6 @@ class _PatientsScreenState extends State<PatientsScreen> {
   }
 }
 
-// ====================================================================
-// ДЕТАЛЬНИЙ ЕКРАН КАРТКИ ПАЦІЄНТА ТА ВЕДЕННЯ ЖУРНАЛУ ВІЗИТІВ
-// ====================================================================
 class PatientCardDetailScreen extends StatefulWidget {
   final Patient patient;
   final VoidCallback onUpdate;
@@ -174,7 +169,6 @@ class PatientCardDetailScreen extends StatefulWidget {
 }
 
 class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
-  // Додавання нової сесії реабілітації (візиту)
   void _createNewVisit() {
     setState(() {
       widget.patient.visits.add(PatientVisit(
@@ -186,7 +180,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
     widget.onUpdate();
   }
 
-  // Функція для відправки звіту МОЗ через месенджери або збереження в хмару
   void _shareMoxReport() {
     final reportText = widget.patient.generateMoxStatement();
     Share.share(reportText, subject: 'Реабілітаційна виписка МОЗ — ${widget.patient.name}');
@@ -211,7 +204,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Паспортна частина картки
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -226,7 +218,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
             
-            // Заголовок блоку візитів
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -247,7 +238,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(32.0),
-                  child: Text('Жодного візиту ще не додано. Натисніть кнопку "Зафіксувати візит" вище.', textAlign: Center, style: TextStyle(color: Colors.grey)),
+                  child: Text('Жодного візиту ще не додано. Натисніть кнопку "Зафіксувати візит" вище.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                 ),
               )
             else
@@ -273,7 +264,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          // Нотатки терапевта
                           TextFormField(
                             initialValue: visit.therapeuticNote,
                             decoration: const InputDecoration(labelText: 'Статус / Щоденник візиту', border: OutlineInputBorder()),
@@ -285,21 +275,18 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           ),
                           const SizedBox(height: 12),
                           
-                          // Виведення проведених тестів усередині цього візиту
                           if (visit.testResults.isNotEmpty) ...[
                             const Text('Проведені тестування за шкалами:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                             ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 13, color: Colors.blue, fontWeight: FontWeight.w600))),
                             const SizedBox(height: 10),
                           ],
 
-                          // Виведення призначених вправ усередині цього візиту
                           if (visit.assignedExercises.isNotEmpty) ...[
                             const Text('Призначені вправи:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                             ...visit.assignedExercises.map((exName) => Text('• $exName', style: const TextStyle(fontSize: 13, color: Colors.green))),
                             const SizedBox(height: 10),
                           ],
 
-                          // Інструментальні кнопки управління всередині візиту
                           Row(
                             children: [
                               Expanded(
@@ -320,7 +307,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                       ),
                                     );
                                   },
-                                  icon: const Icon(Icons. Abigail, size: 16),
+                                  icon: const Icon(Icons.analytics, size: 16),
                                   label: const Text('Провести тест', style: TextStyle(fontSize: 11)),
                                 ),
                               ),
