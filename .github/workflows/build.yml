@@ -31,7 +31,6 @@ jobs:
 
     - name: Force Compile SDK 34 for All Plugins
       run: |
-        # Дописуємо в кінець головного build.gradle скрипт, який перехоплює налаштування кожного плагіна
         cat << 'EOF' >> android/build.gradle
 
         subprojects {
@@ -58,4 +57,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: rehabilitation-app-release
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: "**/build/app/outputs/flutter-apk/*.apk"
