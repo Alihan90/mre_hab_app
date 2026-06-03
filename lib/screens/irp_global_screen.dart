@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models.dart';
 
 class IrpGlobalScreen extends StatefulWidget {
-  final List<Patient> patients; // Передаємо список пацієнтів для вибору
-  final VoidCallback onUpdate;  // Функція для оновлення стану всього додатка
+  final List<Patient> patients;
+  final VoidCallback onUpdate;
 
   const IrpGlobalScreen({super.key, required this.patients, required this.onUpdate});
 
@@ -14,7 +14,6 @@ class IrpGlobalScreen extends StatefulWidget {
 class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
   Patient? _selectedPatient;
   
-  // Контролери текстових полів конструктора ІРП
   final _goalsController = TextEditingController();
   final _mfkController = TextEditingController();
   final _interventionController = TextEditingController();
@@ -29,7 +28,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
     }
   }
 
-  // Завантаження поточних даних ІРП вибраного пацієнта в текстові поля
   void _loadPatientData(Patient patient) {
     _selectedPatient = patient;
     _goalsController.text = patient.irp.goalsSmart;
@@ -39,7 +37,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
     _rehabilitationCycle = patient.irp.rehabilitationCycle;
   }
 
-  // Збереження оновленого плану в модель пацієнта
   void _saveIrpData() {
     if (_selectedPatient != null) {
       setState(() {
@@ -50,7 +47,7 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
         _selectedPatient!.irp.rehabilitationCycle = _rehabilitationCycle;
       });
       
-      widget.onUpdate(); // Оновлюємо глобальний стан додатку
+      widget.onUpdate();
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('ІРП для пацієнта ${_selectedPatient!.name} успішно збережено за протоколом МОЗ!')),
@@ -71,7 +68,7 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                 padding: EdgeInsets.all(24.0),
                 child: Text(
                   'У реєстрі немає пацієнтів.\nСпочатку створіть картку пацієнта в розділі "Реєстр".',
-                  textAlign: Center,
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15, color: Colors.grey),
                 ),
               ),
@@ -82,7 +79,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Блок вибору пацієнта
                   const Text('Виберіть пацієнта для редагування ІРП:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 6),
                   Container(
@@ -112,7 +108,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   ),
                   const Divider(height: 24, thickness: 1),
 
-                  // Клінічна довідка по SMART та МКФ
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: Colors.teal.shade50, borderRadius: BorderRadius.circular(8)),
@@ -131,7 +126,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Текстові поля конструктора плану
                   TextField(
                     controller: _goalsController,
                     maxLines: null,
@@ -195,7 +189,6 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Кнопка збереження
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade700,
