@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace "com.example.mre_hab_app"
+    compileSdk 34
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    defaultConfig {
+        applicationId "com.example.mre_hab_app"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+// Ось цей блок примусово змусить share_plus та інші плагіни переключитися на SDK 34
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                compileSdkVersion 34
+                defaultConfig {
+                    targetSdkVersion 34
+                }
+            }
+        }
+    }
+}
