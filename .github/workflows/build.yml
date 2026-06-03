@@ -24,14 +24,26 @@ jobs:
       with:
         channel: 'stable'
 
+    - name: Configure Flutter SDK Version
+      run: |
+        # Офіційне налаштування Flutter, яке глобально задає версію Android SDK 34
+        flutter config --android-sdk-preview=true
+
+    - name: Clean and Recreate Android Project
+      run: |
+        rm -rf android
+        flutter create . --platforms=android
+
+    - name: Update SDK Version in Gradle Build
+      run: |
+        # Точково міняємо версію лише в згенерованому файлі налаштувань програмного додатка
+        if [ -f android/app/build.gradle ]; then
+          sed -i 's/compileSdk = .*/compileSdk = 34/g' android/app/build.gradle
+          sed -i 's/targetSdk = .*/targetSdk = 34/g' android/app/build.gradle
+        fi
+
     - name: Install dependencies
       run: flutter pub get
-
-    - name: Global SDK 34 Override
-      run: |
-        # Цей скрипт знаходить дефолтні налаштування Flutter і примусово каже збирати все під SDK 34
-        find . -name "build.gradle" -eval sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' {} \;
-        find . -name "build.gradle" -eval sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' {} \;
 
     - name: Build APK
       run: flutter build apk --release --no-tree-shake-icons
