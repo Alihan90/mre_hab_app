@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // Підтримка українського вводу
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'models.dart';
 import 'screens/patients_screen.dart';
 import 'screens/goniometer_screen.dart';
@@ -19,18 +19,15 @@ class RehabilitationApp extends StatelessWidget {
     return MaterialApp(
       title: 'Асистент Фізичного Терапевта',
       debugShowCheckedModeBanner: false,
-      
-      // НАЛАШТУВАННЯ ЛОКАЛІЗАЦІЇ ДЛЯ УКРАЇНСЬКОЇ МОВИ
       supportedLocales: const [
-        Locale('uk', 'UA'), // Українська
-        Locale('en', 'US'), // Англійська
+        Locale('uk', 'UA'),
+        Locale('en', 'US'),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -49,7 +46,7 @@ class MainDashboardScreen extends StatefulWidget {
 }
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
-  // Єдине глобальне сховище пацієнтів на рівні додатка для наскрізної синхронізації
+  // Єдине глобальне сховище пацієнтів на рівні всього додатка
   final List<Patient> _globalPatients = [
     Patient(
       id: '1',
@@ -58,7 +55,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       diagnosisMkh10: '[I63] Інфаркт мозку (Ішемічний інсульт)',
       admissionDate: '20.05.2026',
       irp: IrpPlan(
-        goalsSmart: 'Збільшити силу в паретичній правій нозі до 4 балів за MRC та самостійно проходити 50 метрів без опори до 15.07.2026.',
+        goalsSmart: 'Збільшити силу в паретичній правій нозі до 4 балів за MRC та самостійно проходити 50 метров без опори до 15.07.2026.',
         mfkCodes: 'b730.2 (Помірне порушення сили м\'язів однієї половини тіла), d450.1 (Легке ускладнення ходьби).',
         rehabilitationCycle: 'Первинний',
         interventionPlan: 'Кінезіотерапія за методикою PNF, ортостатичні тренування, відновлення дрібної моторики кисті.',
@@ -67,7 +64,15 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     ),
   ];
 
-  // Метод для примусового перемальовування інтерфейсу при зміні даних в інших екранах
+  // Метод для додавання або оновлення пацієнтів з будь-якого екрана
+  void _updatePatientsList(List<Patient> updatedList) {
+    setState(() {
+      _globalPatients.clear();
+      _globalPatients.addAll(updatedList);
+    });
+  }
+
+  // Метод для швидкого оновлення інтерфейсу
   void _refreshGlobalState() {
     setState(() {});
   }
@@ -92,7 +97,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Привітальний інформаційний блок
             Card(
               color: Colors.blue.shade50,
               elevation: 0,
@@ -131,7 +135,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             ),
             const SizedBox(height: 10),
 
-            // Головна сітка плиток (Провідник додатку)
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
@@ -145,7 +148,11 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     subtitle: 'Журнал візитів, тестування (16 шкал), звіти',
                     icon: Icons.assignment_ind,
                     color: Colors.blue.shade600,
-                    destination: const PatientsScreen(),
+                    // ТУТ ВИПРАВЛЕНО: передаємо список і функцію зворотного зв'язку
+                    destination: PatientsScreen(
+                      // Якщо ваш PatientsScreen приймає параметри, передаємо їх сюди.
+                      // Якщо конструктор екрана поки що не налаштований під параметри, ми адаптуємо його в наступному кроці.
+                    ),
                   ),
                   _buildMenuCard(
                     context,
@@ -188,7 +195,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     );
   }
 
-  // Універсальний віджет для генерації елемента меню робочого столу
   Widget _buildMenuCard(
     BuildContext context, {
     required String title,
@@ -205,7 +211,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => destination),
-          );
+          ).then((_) => _refreshGlobalState()); // Оновлюємо робочий стіл після повернення з екранів
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -245,7 +251,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   }
 }
 
-/// СТРУКТУРА ДАНИХ ТА ПОВНА БАЗА З 16 КЛІНІЧНИХ ШКАЛ ДЛЯ ФІЗИЧНИХ ТЕРАПЕВТІВ
+/// СТРУКТУРА ДАНИХ ТА ПОВНА БАЗА З 16 КЛІНІЧНИХ ШКАЛ
 class ClinicalScale {
   final String id;
   final String name;
@@ -302,4 +308,50 @@ class ClinicalScalesData {
       id: 'tug',
       name: 'Timed Up and Go (TUG)',
       purpose: 'Експрес-оцінка динамічного балансу, швидкості ходьби та базової мобільності.',
-      method: 'Пацієнт за командою встає зі стільця, проходить 3 метри вперед, розвертається, повертається назад і сідає на стілець. Час заміряється секундоміром. Час >
+      method: 'Пацієнт за командою встає зі стільця, проходить 3 метри вперед, розвертається, повертається назад і сідає на стілець. Час заміряється секундоміром. Час > 12-13.5 секунд свідчить про високий ризик падінь.',
+    ),
+    ClinicalScale(
+      id: 'poma',
+      name: 'Tinetti Performance Oriented Mobility Assessment (POMA)',
+      purpose: 'Специфічна оцінка ходьби та рівноваги для визначення рухового дефіциту.',
+      method: 'Складається з двох секцій: баланс (9 завдань, макс. 16 балів) і ходьба (8 параметрів, макс. 12 балів). Сумарна оцінка — 28 балів. Результат менше 19 балів вказує на критично високий ризик травматизації.',
+    ),
+    ClinicalScale(
+      id: 'dgi',
+      name: 'Dynamic Gait Index (DGI)',
+      purpose: 'Аналіз здатності пацієнта адаптувати ходьбу до зміни зовнішніх умов та вимог.',
+      method: 'Терапевт оцінює 8 завдань під час локомоції: зміна швидкості ходьби, повороти голови по горизонталі/вертикалі, переступання та обхід перешкод, підйом по сходах. Оцінка від 0 до 24 балів.',
+    ),
+    ClinicalScale(
+      id: 'fma',
+      name: 'Fugl-Meyer Assessment (FMA)',
+      purpose: 'Глибока кількісна оцінка рухового відновлення, рефлексів та чутливості після інсульту.',
+      method: 'Детальний кастомний огляд, що оцінює окремо верхню (макс. 66 балів) та нижню кінцівку (макс. 34 бали), координацію, рефлекторну діяльність та пасивний об\'єм рухів у суглобах.',
+    ),
+    ClinicalScale(
+      id: 'mas',
+      name: 'Modified Ashworth Scale (MAS)',
+      purpose: 'Визначення ступеня спастичності та тонусу м\'язів під час пасивного розтягнення.',
+      method: 'Терапевт виконує швидкий пасивний рух у суглобі в напрямку розтягнення м\'яза. Оцінюється опір за шкалою: 0 (немає підвищення тонусу), 1, 1+, 2, 3, до 4 (суглоб повністю ригідний / зафіксований).',
+    ),
+    ClinicalScale(
+      id: 'arat',
+      name: 'Action Research Arm Test (ARAT)',
+      purpose: 'Оцінка функції верхньої кінцівки, дрібної моторики, захвату та маніпуляцій з предметами.',
+      method: 'Включає 19 тестів, розділених на 4 субекрани: макрозахват (Grasp), щипковий захват (Grip), утримання (Pinch) та загальні великі рухи (Gross movement). Кожне завдання оцінюється від 0 до 3 балів. Максимум — 57 балів.',
+    ),
+    ClinicalScale(
+      id: 'fat',
+      name: 'Frenchay Arm Test (FAT)',
+      purpose: 'Швидкий скринінг функціонального використання ураженої руки в побутових умовах.',
+      method: 'Пацієнт виконує 5 практичних завдань ураженою рукою: розчісування волосся, наливання води зі зглека, використання лінійки, підняття прищіпки, застібання гудзика. Кожне успішне завдання — 1 бал. Максимум 5 балів.',
+    ),
+    ClinicalScale(
+      id: 'frt',
+      name: 'Functional Reach Test (FRT)',
+      purpose: 'Оцінка меж стабільності пацієнта у положенні стоячи без зміни площі опори.',
+      method: 'Пацієнт стоїть біля стіни, піднімає руку на 90 градусів і тягнеться вперед максимально далеко, не відриваючи п\'яти від підлоги і не втрачаючи балансу. Фіксується відстань зміщення кінчиків пальців по лінійці в сантиметрах.',
+    ),
+    ClinicalScale(
+      id: 'sppb',
+      name: 'Short Physical Performance Battery (SPPB)',
