@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ScalesCatalogScreen extends StatefulWidget {
-  final Function(String, String)? onScaleTested; // Для передачі результату (Назва, Бал) у картку візиту
+  final Function(String, String)? onScaleTested;
 
   const ScalesCatalogScreen({super.key, this.onScaleTested});
 
@@ -38,7 +38,7 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
             context,
             'Індекс мобільності Рівермід (RMI)',
             'Оцінка рівня рухової активності та локомоції',
-            'Опитувальник з 15 пунктів (від повертання в ліжку до підйому по сходах).',
+            'Опитувальник з 15 пунктів (від повертання v ліжку до підйому по сходах).',
             () => Navigator.push(context, MaterialPageRoute(builder: (context) => RivermeadTestScreen(onSave: widget.onScaleTested))),
           ),
           _buildScaleTile(
@@ -76,9 +76,6 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
   }
 }
 
-// ==========================================
-// 1. ПОВНОЦІННИЙ ТЕСТ: MRC-SUMSCORE
-// ==========================================
 class MrcScaleTestScreen extends StatefulWidget {
   final Function(String, String)? onSave;
   const MrcScaleTestScreen({super.key, this.onSave});
@@ -152,9 +149,6 @@ class _MrcScaleTestScreenState extends State<MrcScaleTestScreen> {
   }
 }
 
-// ==========================================
-// 2. ПОВНОЦІННИЙ ТЕСТ: ШКАЛА БАЛАНСУ БЕРГА
-// ==========================================
 class BergBalanceTestScreen extends StatefulWidget {
   final Function(String, String)? onSave;
   const BergBalanceTestScreen({super.key, this.onSave});
@@ -170,7 +164,7 @@ class _BergBalanceTestScreenState extends State<BergBalanceTestScreen> {
     '1. Перехід з положення сидячи в положення стояти',
     '2. Стояння без опори (2 хвилини)',
     '3. Сидіння без опори, стопи на підлозі (2 хвилини)',
-    '4. Перехід з положення стоячи в положення сидячи',
+    '4. Перехід з положення стоячи v положення сидячи',
     '5. Пересаджування (з крісла на крісло)',
     '6. Стояння із заплющеними очима (10 секунд)',
     '7. Стояння з близько поставленими стопами',
@@ -202,7 +196,7 @@ class _BergBalanceTestScreenState extends State<BergBalanceTestScreen> {
             color: Colors.amber.shade50,
             child: Text(
               'Клінічний висновок: $_total б. — ${_getInterpretation()}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber Wallace),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber),
             ),
           ),
           Expanded(
@@ -246,9 +240,6 @@ class _BergBalanceTestScreenState extends State<BergBalanceTestScreen> {
   }
 }
 
-// ==========================================
-// 3. ПОВНОЦІННИЙ ТЕСТ: ІНДЕКС РІВЕРМІД
-// ==========================================
 class RivermeadTestScreen extends StatefulWidget {
   final Function(String, String)? onSave;
   const RivermeadTestScreen({super.key, this.onSave});
@@ -262,14 +253,14 @@ class _RivermeadTestScreenState extends State<RivermeadTestScreen> {
 
   final List<String> _questions = [
     '1. Повертання в ліжку: чи може пацієнт самостійно повернутися з боку на бік?',
-    '2. Перехід із положення лежачи в положення сидячи на краю ліжка?',
-    '3. Утримання рівноваги в положенні сидячи без опори протягом 10 сек?',
-    '4. Перехід з положення сидячи в стояче положення без сторонньої допомоги?',
+    '2. Перехід із положення лежачи v положення сидячи на краю ліжка?',
+    '3. Утримання рівноваги v положенні сидячи без опори протягом 10 сек?',
+    '4. Перехід з положення сидячи v стояче положення без сторонньої допомоги?',
     '5. Стояння без опори протягом 10 секунд?',
     '6. Пересаджування з ліжка на стілець і назад без допомоги?',
     '7. Ходьба по кімнаті (можна з тростиною) на відстань 10 метрів?',
     '8. Підйом по сходах на один проліт без сторонньої допомоги?',
-    '9. Ходьба по вулиці по рівній поверхні на відстань до 50 метрів?',
+    '9. Ходьба по вулиці по рівній поверхні на відстань до 50 метров?',
     '10. Ходьба по кімнаті без використання допоміжних засобів опори?',
     '11. Підйом предмета з підлоги без опори на стілець/стіну?',
     '12. Ходьба по вулиці по нерівній поверхні (трава, гравій, бруківка)?',
@@ -321,9 +312,6 @@ class _RivermeadTestScreenState extends State<RivermeadTestScreen> {
   }
 }
 
-// ==========================================
-// 4. ПОВНОЦІННИЙ ТЕСТ: ШКАЛА АШВОРТ (СПАСТИЧНІСТЬ)
-// ==========================================
 class AshworthTestScreen extends StatefulWidget {
   final Function(String, String)? onSave;
   const AshworthTestScreen({super.key, this.onSave});
