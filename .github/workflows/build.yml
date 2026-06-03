@@ -3,7 +3,7 @@ name: Flutter Build APK
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Дозволяє запускати збірку вручну кнопкою
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,6 +23,11 @@ jobs:
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
+
+    - name: Repair Android structure
+      run: |
+        rm -rf android
+        flutter create . --platforms=android
 
     - name: Install dependencies
       run: flutter pub get
