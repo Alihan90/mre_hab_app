@@ -64,14 +64,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     ),
   ];
 
-  // Метод для додавання або оновлення пацієнтів з будь-якого екрана
-  void _updatePatientsList(List<Patient> updatedList) {
-    setState(() {
-      _globalPatients.clear();
-      _globalPatients.addAll(updatedList);
-    });
-  }
-
   // Метод для швидкого оновлення інтерфейсу
   void _refreshGlobalState() {
     setState(() {});
@@ -85,7 +77,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Робочий стіл реабілітації', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-            Text('Комплексна автоматизована система', style: TextStyle(fontSize: 12, color: Colors.white70)),
+            Text('Комплексна автоматизованаシステム', style: TextStyle(fontSize: 12, color: Colors.white70)),
           ],
         ),
         backgroundColor: Colors.blue.shade700,
@@ -148,16 +140,12 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     subtitle: 'Журнал візитів, тестування (16 шкал), звіти',
                     icon: Icons.assignment_ind,
                     color: Colors.blue.shade600,
-                    // ТУТ ВИПРАВЛЕНО: передаємо список і функцію зворотного зв'язку
-                    destination: PatientsScreen(
-                      // Якщо ваш PatientsScreen приймає параметри, передаємо їх сюди.
-                      // Якщо конструктор екрана поки що не налаштований під параметри, ми адаптуємо його в наступному кроці.
-                    ),
+                    destination: const PatientsScreen(),
                   ),
                   _buildMenuCard(
                     context,
                     title: 'Конструктор ІРП / МКФ',
-                    subtitle: 'Цілі SMART та функціональний діагноз',
+                    subtitle: 'Цілі SMART та funktionальний діагноз',
                     icon: Icons.gavel,
                     color: Colors.teal.shade600,
                     destination: IrpGlobalScreen(patients: _globalPatients, onUpdate: _refreshGlobalState),
@@ -211,7 +199,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => destination),
-          ).then((_) => _refreshGlobalState()); // Оновлюємо робочий стіл після повернення з екранів
+          ).then((_) => _refreshGlobalState());
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -251,7 +239,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   }
 }
 
-/// СТРУКТУРА ДАНИХ ТА ПОВНА БАЗА З 16 КЛІНІЧНИХ ШКАЛ
 class ClinicalScale {
   final String id;
   final String name;
@@ -326,32 +313,8 @@ class ClinicalScalesData {
       id: 'fma',
       name: 'Fugl-Meyer Assessment (FMA)',
       purpose: 'Глибока кількісна оцінка рухового відновлення, рефлексів та чутливості після інсульту.',
-      method: 'Детальний кастомний огляд, що оцінює окремо верхню (макс. 66 балів) та нижню кінцівку (макс. 34 бали), координацію, рефлекторну діяльність та пасивний об\'єм рухів у суглобах.',
+      method: 'Детальний огляд, що оцінює окремо верхню (макс. 66 балів) та нижню кінцівку (макс. 34 бали), координацію, рефлекторну діяльність та пасивний об\'єм рухів у суглобах.',
     ),
     ClinicalScale(
       id: 'mas',
-      name: 'Modified Ashworth Scale (MAS)',
-      purpose: 'Визначення ступеня спастичності та тонусу м\'язів під час пасивного розтягнення.',
-      method: 'Терапевт виконує швидкий пасивний рух у суглобі в напрямку розтягнення м\'яза. Оцінюється опір за шкалою: 0 (немає підвищення тонусу), 1, 1+, 2, 3, до 4 (суглоб повністю ригідний / зафіксований).',
-    ),
-    ClinicalScale(
-      id: 'arat',
-      name: 'Action Research Arm Test (ARAT)',
-      purpose: 'Оцінка функції верхньої кінцівки, дрібної моторики, захвату та маніпуляцій з предметами.',
-      method: 'Включає 19 тестів, розділених на 4 субекрани: макрозахват (Grasp), щипковий захват (Grip), утримання (Pinch) та загальні великі рухи (Gross movement). Кожне завдання оцінюється від 0 до 3 балів. Максимум — 57 балів.',
-    ),
-    ClinicalScale(
-      id: 'fat',
-      name: 'Frenchay Arm Test (FAT)',
-      purpose: 'Швидкий скринінг функціонального використання ураженої руки в побутових умовах.',
-      method: 'Пацієнт виконує 5 практичних завдань ураженою рукою: розчісування волосся, наливання води зі зглека, використання лінійки, підняття прищіпки, застібання гудзика. Кожне успішне завдання — 1 бал. Максимум 5 балів.',
-    ),
-    ClinicalScale(
-      id: 'frt',
-      name: 'Functional Reach Test (FRT)',
-      purpose: 'Оцінка меж стабільності пацієнта у положенні стоячи без зміни площі опори.',
-      method: 'Пацієнт стоїть біля стіни, піднімає руку на 90 градусів і тягнеться вперед максимально далеко, не відриваючи п\'яти від підлоги і не втрачаючи балансу. Фіксується відстань зміщення кінчиків пальців по лінійці в сантиметрах.',
-    ),
-    ClinicalScale(
-      id: 'sppb',
-      name: 'Short Physical Performance Battery (SPPB)',
+      name: 'Modified Ashworth
