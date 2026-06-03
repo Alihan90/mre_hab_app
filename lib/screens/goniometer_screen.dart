@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:sensors_plus/sensors_plus.dart';
 
+// Модель даних для анатомічної норми суглоба
+class JointNorm {
+  final String jointName;
+  final String movementType;
+  final String normalRom;
+  final String Instructions;
+
+  const JointNorm({
+    required this.jointName,
+    required this.movementType,
+    required this.normalRom,
+    required this.Instructions,
+  });
+}
+
 class GoniometerScreen extends StatefulWidget {
   const GoniometerScreen({super.key});
 
@@ -14,27 +29,88 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
   double? _startAngle;
   double? _endAngle;
   double _calculatedRom = 0.0;
-  
-  // Змінна для підписки на датчик, щоб вчасно її закрити і не перевантажувати телефон
   dynamic _accelerometerSubscription;
+
+  // Капітальна база даних клінічних норм гоніометрії (AAOS стандарти)
+  final List<JointNorm> _jointNorms = const [
+    // ПЛЕЧОВИЙ СУГЛОБ
+    JointNorm(
+      jointName: 'Плечовий суглоб',
+      movementType: 'Згинання (Flexion)',
+      normalRom: '0° – 180°',
+      Instructions: 'Вісь: латеральна поверхня акроміону. Рухоме плече: по осі плечової кістки до латерального надвиростка.',
+    ),
+    JointNorm(
+      jointName: 'Плечовий суглоб',
+      movementType: 'Розгинання (Extension)',
+      normalRom: '0° – 60°',
+      Instructions: 'Вісь: латеральна поверхня акроміону. Рухоме плече вздовж плечової кістки назад.',
+    ),
+    JointNorm(
+      jointName: 'Плечовий суглоб',
+      movementType: 'Відведення (Abduction)',
+      normalRom: '0° – 180°',
+      Instructions: 'Вісь: задній бік суглоба, центр голівки. Рухоме плече паралельно хребту.',
+    ),
+    // ЛІКТЬОВИЙ СУГЛОБ
+    JointNorm(
+      jointName: 'Ліктьовий суглоб',
+      movementType: 'Згинання / Розгинання',
+      normalRom: '0° (розгинання) – 150° (згинання)',
+      Instructions: 'Вісь: латеральний надвиросток плеча. Рухоме плече: вздовж променевої кістки до шилоподібного відростка.',
+    ),
+    JointNorm(
+      jointName: 'Передпліччя',
+      movementType: 'Пронація / Супінація',
+      normalRom: '80° (пронація) / 80° (супінація)',
+      Instructions: 'Пацієнт тримає ручку. Вісь: поздовжня вісь через третій палець кисті.',
+    ),
+    // КУЛЬШОВИЙ СУГЛОБ
+    JointNorm(
+      jointName: 'Кульшовий суглоб',
+      movementType: 'Згинання (пряма нога)',
+      normalRom: '0° – 90° (з зігнутим коліном до 120°)',
+      Instructions: 'Вісь: великий вертлюг стегнової кістки. Рухоме плече: по лінії стегна до латерального виростка.',
+    ),
+    JointNorm(
+      jointName: 'Кульшовий суглоб',
+      movementType: 'Відведення (Abduction)',
+      normalRom: '0° – 45°',
+      Instructions: 'Вісь: передня верхня клубова ость (SIAS). Рухоме плече спрямоване на колінну чашечку.',
+    ),
+    // КОЛІННИЙ СУГЛОБ
+    JointNorm(
+      jointName: 'Колінний суглоб',
+      movementType: 'Згинання (Flexion)',
+      normalRom: '0° (повне розгинання) – 135°-145°',
+      Instructions: 'Вісь: латеральний виросток стегна. Опора: великий вертлюг. Рухоме плече: до латеральної кісточки гомілки.',
+    ),
+    // ГОМІЛКОВОСТОПНИЙ СУГЛОБ
+    JointNorm(
+      jointName: 'Гомілковостопний суглоб',
+      movementType: 'Тильне згинання (Dorsiflexion)',
+      normalRom: '0° – 20°',
+      Instructions: 'Вісь: латеральна кісточка. Опора: по лінії малої гомілкової кістки. Рухоме плече: паралельно 5-й плесновій кістці.',
+    ),
+    JointNorm(
+      jointName: 'Гомілковостопний суглоб',
+      movementType: 'Підошовне згинання (Plantarflexion)',
+      normalRom: '0° – 50°',
+      Instructions: 'Вісь: латеральна кісточка. Рух стопи вниз від нейтрального положення (90°).',
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    // Підключаємося до датчика нахилу смартфона
     _accelerometerSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
       setState(() {
-        // Вираховуємо кут нахилу в градусах відносно осі Y та Z
         double radians = math.atan2(event.x, event.y);
         double degrees = radians * (180 / math.pi);
-        
-        // Переводимо в діапазон від 0 до 360 градусів
         if (degrees < 0) {
           degrees = 360 + degrees;
         }
         _currentAngle = double.parse(degrees.toStringAsFixed(1));
-        
-        // Якщо зафіксовано обидва кути, вираховуємо амплітуду (ROM)
         _calculateRom();
       });
     });
@@ -62,186 +138,167 @@ class _GoniometerScreenState extends State<GoniometerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Цифровий Гоніометр (ROM)'),
+        title: const Text('Повноцінна Гоніометрія та ROM'),
         backgroundColor: Colors.orange.shade100,
       ),
-      body: Column(
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            // Вкладки: Інструмент вимірювання та Довідник суглобів
+            Container(
+              color: Colors.orange.shade50,
+              child: const TabBar(
+                labelColor: Colors.orange,
+                unselectedLabelColor: Colors.black54,
+                indicatorColor: Colors.orange,
+                tabs: [
+                  Tab(icon: Icon(Icons.screen_rotation), text: 'Вимірювач кута'),
+                  Tab(icon: Icon(Icons.menu_book), text: 'Таблиця норм (Суглоби)'),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // --- ВКЛАДКА 1: ЦИФРОВИЙ ДАТЧИК ---
+                  _buildGoniometerTool(),
+                  
+                  // --- ВКЛАДКА 2: КЛІНІЧНИЙ ДОВІДНИК УСІХ СУГЛОБІВ ---
+                  _buildJointsDirectory(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Віджет самого цифрового вимірювача
+  Widget _buildGoniometerTool() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Методична інструкція проведення гоніометрії
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
+          Card(
             color: Colors.orange.shade50,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text('Інструкція з вимірювання амплітуди (ROM)', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                SizedBox(height: 6),
-                Text(
-                  '1. Прикладіть бічну грань телефона до проксимального сегменту суглоба пацієнта.\n'
-                  '2. Натисніть "Зафіксувати початковий кут".\n'
-                  '3. Виконайте рух у суглобі разом із телефоном до кінцевої точки.\n'
-                  '4. Натисніть "Зафіксувати кінцевий кут". Додаток сам порахує чистий кут руху.',
-                  style: TextStyle(fontSize: 12, color: Colors.black87),
-                ),
-              ],
+            child: const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Text(
+                'Зафіксуйте старт на проксимальному сегменті суглоба, проведіть рух кінцівки та зафіксуйте фініш. Порівняйте отриманий ROM з нормативами у сусідній вкладці.',
+                style: TextStyle(fontSize: 12, color: Colors.black87),
+                textAlign: Center,
+              ),
             ),
           ),
-          
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Column(
+            children: [
+              const Text('Поточний нахил:', style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 8),
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  // Візуальний круглий індикатор поточного нахилу
-                  Column(
-                    children: [
-                      const Text('Поточний нахил пристрою:', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                      const SizedBox(height: 10),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 160,
-                            height: 160,
-                            child: CircularProgressIndicator(
-                              value: _currentAngle / 360,
-                              strokeWidth: 12,
-                              backgroundColor: Colors.grey.shade200,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          Text(
-                            '$_currentAngle°',
-                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  // Секція фіксації результатів
-                  Card(
-                    elevation: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              const Text('Старт', style: TextStyle(fontSize: 14)),
-                              const SizedBox(height: 6),
-                              Text(
-                                _startAngle != null ? '$_startAngle°' : '--',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue),
-                              ),
-                            ],
-                          ),
-                          Container(width: 1, height: 40, color: Colors.grey.shade300),
-                          Column(
-                            children: [
-                              const Text('Фініш', style: TextStyle(fontSize: 14)),
-                              const SizedBox(height: 6),
-                              Text(
-                                _endAngle != null ? '$_endAngle°' : '--',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.purple),
-                              ),
-                            ],
-                          ),
-                          Container(width: 1, height: 40, color: Colors.grey.shade300),
-                          Column(
-                            children: [
-                              const Text('Амплітуда (ROM)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 6),
-                              Text(
-                                '$_calculatedRom°',
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                  SizedBox(
+                    width: 140,
+                    height: 140,
+                    child: CircularProgressIndicator(
+                      value: _currentAngle / 360,
+                      strokeWidth: 10,
+                      backgroundColor: Colors.grey.shade200,
+                      color: Colors.orange,
                     ),
                   ),
-
-                  // Кнопки керування процесом
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _startAngle = _currentAngle;
-                                  _calculateRom();
-                                });
-                              },
-                              icon: const Icon(Icons.play_arrow),
-                              label: const Text('Кут Старт', style: TextStyle(fontSize: 14)),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.purple,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _endAngle = _currentAngle;
-                                  _calculateRom();
-                                });
-                              },
-                              icon: const Icon(Icons.stop),
-                              label: const Text('Кут Фініш', style: TextStyle(fontSize: 14)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          minimumSize: const Size(double.infinity, 48),
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: _resetGoniometer,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Скинути показники', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
+                  Text('$_currentAngle°', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(children: [const Text('Старт', style: TextStyle(fontSize: 12)), Text(_startAngle != null ? '$_startAngle°' : '--', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue))]),
+                  Container(width: 1, height: 30, color: Colors.grey.shade300),
+                  Column(children: [const Text('Фініш', style: TextStyle(fontSize: 12)), Text(_endAngle != null ? '$_endAngle°' : '--', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple))]),
+                  Container(width: 1, height: 30, color: Colors.grey.shade300),
+                  Column(children: [const Text('Чистий ROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), Text('$_calculatedRom°', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green))]),
                 ],
               ),
             ),
           ),
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12)),
+                      onPressed: () => setState(() => _startAngle = _currentAngle),
+                      child: const Text('Кут Старт'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12)),
+                      onPressed: () => setState(() => _endAngle = _currentAngle),
+                      child: const Text('Кут Фініш'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.red, minimumSize: const Size(double.infinity, 44), side: const BorderSide(color: Colors.red)),
+                onPressed: _resetGoniometer,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Скинути дані'),
+              ),
+            ],
+          )
         ],
       ),
     );
   }
 
+  // Віджет повного клінічного довідника суглобів
+  Widget _buildJointsDirectory() {
+    return ListView.builder(
+      itemCount: _jointNorms.length,
+      itemBuilder: (context, index) {
+        final norm = _jointNorms[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: ExpansionTile(
+            leading: const Icon(Icons.accessibility_new, color: Colors.orange),
+            title: Text(norm.jointName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            subtitle: Text('${norm.movementType}  |  Норма: ${norm.normalRom}', style: TextStyle(fontSize: 13, color: Colors.orange.shade900, fontWeight: FontWeight.w500)),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Методика укладання гоніометра:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black54)),
+                    const SizedBox(height: 4),
+                    Text(norm.Instructions, style: const TextStyle(fontSize: 13, height: 1.3, color: Colors.black87)),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
-    // Обов'язково відключаємося від датчиків при виході з екрана, щоб додаток не вилітав
     _accelerometerSubscription?.cancel();
     super.dispose();
   }
