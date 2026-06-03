@@ -96,7 +96,8 @@ class _Mkh10ScreenState extends State<Mkh10Screen> {
                     decoration: const InputDecoration(
                       hintText: 'Введіть код та назву вручну',
                       border: OutlineInputBorder(),
-                      backgroundColor: Colors.white,
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
