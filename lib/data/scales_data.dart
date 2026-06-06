@@ -313,7 +313,7 @@ final Map<String, ScaleProtocol> clinicalScalesRegistry = {
         ScaleOption(0, "0 — Нездатний підняти ногу або потребує повної підтримки")
       ]),
     ],
-  )
+  ),
 // 7. ШКАЛА NIHSS (National Institutes of Health Stroke Scale) — Офіційний протокол
   "NIHSS": ScaleProtocol(
     id: "NIHSS",
