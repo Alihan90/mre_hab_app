@@ -32,6 +32,10 @@ jobs:
         run: |
           flutter create . --platforms=android
 
+      # --- ОСЬ ЦЕЙ НОВИЙ КРОК ДЛЯ ОЧИЩЕННЯ КЕШУ ---
+      - name: Clean Flutter cache
+        run: flutter clean
+
       - name: Install dependencies
         run: flutter pub get
 
