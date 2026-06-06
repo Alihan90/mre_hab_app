@@ -1,8 +1,11 @@
+// lib/screens/scales_catalog_screen.dart
 import 'package:flutter/material.dart';
-import 'goniometry_test_screen.dart'; // Підключаємо наш новий екран тесту
+import 'goniometry_test_screen.dart';
 
 class ScalesCatalogScreen extends StatelessWidget {
-  const ScalesCatalogScreen({Key? key}) : super(key: key);
+  final Function(String, String)? onScaleTested; // Додали параметр для зв'язку з пацієнтом
+
+  const ScalesCatalogScreen({Key? key, this.onScaleTested}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,8 +14,11 @@ class ScalesCatalogScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Клінічні оцінки та шкали"),
-          backgroundColor: Colors.teal,
+          backgroundColor: Colors.blue.shade700,
+          foregroundColor: Colors.white,
           bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
             indicatorColor: Colors.white,
             tabs: [
               Tab(icon: Icon(Icons.child_care), text: "Дитячі"),
@@ -23,48 +29,36 @@ class ScalesCatalogScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildScalesCategoryList(context, "Child"),
-            _buildScalesCategoryList(context, "Adult"),
-            const GoniometryInteractiveTestScreen(), // Вставляємо тест третьою вкладкою
+            _buildCatalogList("Child"),
+            _buildCatalogList("Adult"),
+            GoniometryInteractiveTestScreen(onSaveResult: onScaleTested), // Передаємо колбек сюди
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScalesCategoryList(BuildContext context, String ageGroup) {
-    // Твій список категорій (Неврологія, Ортопедія тощо) відповідно до ТЗ
-    final List<Map<String, String>> categories = ageGroup == "Child" 
-      ? [
-          {"title": "🧠 Неврологія та ДЦП", "desc": "GMFCS, GMFM-66/88, MACS, WeeFIM..."},
-          {"title": "🦴 Ортопедія та Біль", "desc": "FLACC, Wong-Baker, PODCI..."},
-          {"title": "🗣️ Розвиток та Комунікація", "desc": "Bayley-III, CARS, VABS, CFCS..."},
-        ]
-      : [
-          {"title": "🧠 Неврологія та Штрих", "desc": "NIHSS, Індекс Бартел, Берг, Ашворт..."},
-          {"title": "🦴 Ортопедія та Травма", "desc": "VAS, WOMAC, DASH, Опитувальник Освестрі..."},
-          {"title": "🫁 Кардіо-респіраторна", "desc": "6MWT, Шкала Борга, mMRC, NYHA..."},
-          {"title": "🍽️ Логопедія та Дисфагія", "desc": "GUSS screening, MASA, FOIS..."},
-        ];
-
-    return ListView.builder(
+  Widget _buildCatalogList(String group) {
+    return ListView(
       padding: const EdgeInsets.all(12),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final cat = categories[index];
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 6),
+      children: [
+        Card(
           child: ListTile(
-            title: Text(cat["title"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(cat["desc"]!),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.teal),
+            leading: const CircleAvatar(child: Text("Б")),
+            title: Text(group == "Child" ? "GMFCS — Універсальна система класифікації" : "BBS — Шкала балансу Берга"),
+            subtitle: const Text("Оценочний інструмент балансу та ризику падінь"),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 14),
             onTap: () {
-              // Логіка переходу до списку конкретних інтерактивних шкал цієї категорії
+              if (onScaleTested != null) {
+                onScaleTested!(
+                  group == "Child" ? "GMFCS" : "BBS", 
+                  "Тест розпочато терапевтом"
+                );
+              }
             },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
