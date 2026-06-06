@@ -118,7 +118,7 @@ class MainDashboardScreen extends StatelessWidget {
   subtitle: "Протоколи занять",
   icon: Icons.fitness_center,
   color: Colors.purple.shade600,
-  destination: ExercisesCatalogScreen(), // Тепер плитка відкриватиме вправи!
+  destination: ExercisesCatalogView(), // Тепер плитка відкриватиме вправи!
 ),
 
                   // 6. Налаштування
