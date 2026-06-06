@@ -1,3 +1,5 @@
+import '../models.dart'; 
+import 'package:flutter/material.dart';
 final Map<String, Exercise> exercisesRepository = {
   
   // ==========================================
