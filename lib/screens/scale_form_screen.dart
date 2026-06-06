@@ -29,10 +29,10 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
     "1+": "Незначне підвищення (Легкий опір протягом менше ніж половини амплітуди рухів)",
     "2": "Помірне підвищення тонусу протягом усього руху, але кінцівка згинається легко",
     "3": "Значне підвищення тонусу, виконання пасивних рухів утруднене",
-    "4": "Уражена частина заклякла (Рігідність) у положенні згинання чи розгинання"
+    "4": "Уражена часть заклякла (Рігідність) у положенні згинання чи розгинання"
   };
 
-  // Текстовий контроллер для загальних шкал
+  // Текстові контроллери
   final TextEditingController _genericResultController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
@@ -119,7 +119,7 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
               const Text("Сумарний бал за всіма 14 руховими тестами:", style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // ВИПРАВЛЕНО ТУТ
                 children: [
                   Text("Бал: $_bbsScore", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const Text("Макс: 56", style: TextStyle(color: Colors.grey)),
@@ -160,7 +160,11 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _selectedMasGrade,
-                decoration: const InputDecoration(border: OutlineInputBorder(), backgroundColor: Colors.white),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(), 
+                  filled: true,          // ВИПРАВЛЕНО ТУТ
+                  fillColor: Colors.white // ВИПРАВЛЕНО ТУТ
+                ),
                 items: _masGrades.keys.map((String key) {
                   return DropdownMenuItem<String>(value: key, child: Text("Рівень спастичності: $key"));
                 }).toList(),
@@ -181,7 +185,7 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
       );
     }
 
-    // 3. Універсальна інтелектуальна форма для решти шкал
+    // 3. Універсальна форма для решти шкал
     return Card(
       elevation: 2,
       child: Padding(
@@ -234,12 +238,10 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
       finalResult += " Нотатки: ${_notesController.text}";
     }
 
-    // Передаємо дані у батьківський віджет (колбек карти пацієнта)
     if (widget.onSave != null) {
       widget.onSave!(widget.scaleName, finalResult);
     }
 
-    // Показуємо успішне вікно та повертаємось назад
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -254,8 +256,8 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
         actions: [
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(ctx); // Закриваємо діалог
-              Navigator.pop(context); // Повертаємось у каталог
+              Navigator.pop(ctx); 
+              Navigator.pop(context); 
             },
             child: const Text("Чудово"),
           )
