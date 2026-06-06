@@ -37,7 +37,7 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
         if (_protocol!.type == ScaleType.yesNoList) {
           _answers[q.id] = 0; // Для Так/Ні за замовчуванням 0 (Ні)
         } else if (_protocol!.type == ScaleType.singleChoice) {
-          _answers[q.id] = _protocol!.globalOptions.first.score; 
+          _answers[q.id] = _protocol!.globalOptions?.first.score ?? 0; 
         } else if (_protocol!.type == ScaleType.multiRadioGroup) {
           _answers[q.id] = q.options.first.score; // Перший доступний клінічний варіант
         }
@@ -225,7 +225,7 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
                     style: const TextStyle(fontSize: 13, color: Colors.black),
                     value: _answers[q.id],
                     decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
-                    items: _protocol!.globalOptions.map((opt) {
+                    items: (_protocol!.globalOptions ?? []).map((opt) {
                       return DropdownMenuItem<int>(
                         value: opt.score,
                         child: Text(opt.text, overflow: TextOverflow.ellipsis),
