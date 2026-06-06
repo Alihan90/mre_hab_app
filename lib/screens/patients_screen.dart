@@ -271,7 +271,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
         backgroundColor: Colors.teal.shade100,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_text_outlined, color: Colors.black),
+            icon: const Icon(Icons.share, color: Colors.black),
             tooltip: 'Поділитися формою ІРП МОЗ України',
             onPressed: () => Share.share(patient.generateMoxStatement(), subject: 'ІРП МОЗ — ${patient.name}'),
           )
