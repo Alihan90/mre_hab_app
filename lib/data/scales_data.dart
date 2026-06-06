@@ -1,5 +1,12 @@
 // lib/data/scales_data.dart
 
+enum ScaleCategory {
+  neurology,      // Неврологія (NIHSS, MAS, FIM тощо)
+  pediatrics,     // Педіатрія (WeeFIM, AIMS, CHOP INTEND)
+  intensiveCare,  // Інтенсивна терапія та кардіо (RASS, Борг, Брейден)
+  orthopedics,    // Ортопедія та травматологія (WOMAC, ASIA)
+  cognitive,      // Когнітивні та психологічні тести (MoCA, MMSE, BDI)
+}
 enum ScaleType {
   yesNoList,      // Список питань Так/Ні (1 або 0 балів) - Рівермід
   singleChoice,   // Скринінг за рівнями / Оксфордська шкала - GMFCS, MMT, mRS
@@ -23,17 +30,19 @@ class ScaleProtocol {
   final String id;
   final String name;
   final ScaleType type;
+  final ScaleCategory category; 
+  final String Function(int) interpreter;
+  final List<ScaleOption>? globalOptions;
   final List<ScaleQuestion> questions;
-  final List<ScaleOption> globalOptions; 
-  final String Function(int totalScore)? interpreter;
 
   const ScaleProtocol({
     required this.id,
     required this.name,
     required this.type,
-    this.questions = const [],
-    this.globalOptions = const [],
-    this.interpreter,
+    required this.category, // І ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО
+    required this.interpreter,
+    this.globalOptions,
+    required this.questions,
   });
 }
 
