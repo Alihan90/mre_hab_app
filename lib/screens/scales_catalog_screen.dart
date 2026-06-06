@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'goniometry_test_screen.dart';
 
 class ScalesCatalogScreen extends StatelessWidget {
-  final Function(String, String)? onScaleTested; // Додали параметр для зв'язку з пацієнтом
+  final Function(String, String)? onScaleTested;
 
   const ScalesCatalogScreen({Key? key, this.onScaleTested}) : super(key: key);
 
@@ -31,7 +31,8 @@ class ScalesCatalogScreen extends StatelessWidget {
           children: [
             _buildCatalogList("Child"),
             _buildCatalogList("Adult"),
-            GoniometryInteractiveTestScreen(onSaveResult: onScaleTested), // Передаємо колбек сюди
+            // Передаємо колбек збереження в наш розширений екран
+            GoniometryInteractiveTestScreen(onSaveResult: onScaleTested), 
           ],
         ),
       ),
@@ -45,15 +46,12 @@ class ScalesCatalogScreen extends StatelessWidget {
         Card(
           child: ListTile(
             leading: const CircleAvatar(child: Text("Б")),
-            title: Text(group == "Child" ? "GMFCS — Універсальна система класифікації" : "BBS — Шкала балансу Берга"),
-            subtitle: const Text("Оценочний інструмент балансу та ризику падінь"),
+            title: Text(group == "Child" ? "GMFCS — Система класифікації моторики" : "BBS — Шкала балансу Берга"),
+            subtitle: const Text("Стандартизований клінічний тест"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
             onTap: () {
               if (onScaleTested != null) {
-                onScaleTested!(
-                  group == "Child" ? "GMFCS" : "BBS", 
-                  "Тест розпочато терапевтом"
-                );
+                onScaleTested!(group == "Child" ? "GMFCS" : "BBS", "Проведено базовий тест клінічної оцінки");
               }
             },
           ),
