@@ -29,8 +29,8 @@ final Map<String, Exercise> exercisesRepository = {
     executionSteps: [
       "Позиція: симетрично сидячи, корпус трохи нахилений вперед.",
       "Зробити звичайний вдих через ніс, затримати подих на 2-3 секунди.",
-      "Відкрити рот (у формі літери 'О') і сделать швидкий, форсований видих за рахунок м'язів живота, ніби намагаючись видавити все повітря (звук 'ХАХ').",
-      "Повторити Huffing 2 рази, після чого повернутися до спокійного дихання."
+      "Відкрити рот (у формі літери 'О') і зробити швидкий, форсований видих за рахунок м'язів живота, ніби намагаючись видавити все повітря (звук 'ХАХ').",
+      "Повторити Huffing 2 рази, після чего повернутися до спокійного дихання."
     ],
     ageGroup: ExerciseAgeGroup.adult,
     intensity: ExerciseIntensity.medium,
@@ -73,7 +73,7 @@ final Map<String, Exercise> exercisesRepository = {
     ageGroup: ExerciseAgeGroup.adult,
     intensity: ExerciseIntensity.medium,
     category: "🧠 Неврологічна реабілітація",
-    indications: "Геміпарез/парапарез внаслідок ГПМК (інсульту), наслідки ЧМТ, funkціональна слабкість м'язів кору.",
+    indications: "Геміпарез/парапарез внаслідок ГПМК (інсульту), наслідки ЧМТ, функціональна слабкість м'язів кору.",
     contraindications: "Неконсолідовані переломи хребта чи кісток тазу, гострий тромбоз глибоких вен, спастичність понад 4 бали за MAS.",
     dosage: "2-3 підходи по 8-12 повторень.",
   ),
@@ -108,7 +108,7 @@ final Map<String, Exercise> exercisesRepository = {
     intensity: ExerciseIntensity.medium,
     category: "🧠 Неврологічна реабілітація",
     indications: "Синдром звисаючої стопи після інсульту, ураження малогомілкового нерва, парези нижніх кінцівок.",
-    contraindications: "Фіксована (ригідна) контрактура гомілковостопного суглоба, артрит у фазі загоesterno.",
+    contraindications: "Фіксована (ригідна) контрактура гомілковостопного суглоба, артрит у фазі загострення.",
     dosage: "3 підходи по 8 повторень для ураженої кінцівки.",
   ),
 
@@ -118,7 +118,7 @@ final Map<String, Exercise> exercisesRepository = {
   "PEDS_01": Exercise(
     id: "PEDS_01",
     title: "Активація лабіринтного вирівнюючого рефлексу на фітболі",
-    description: "Стимуляція контролю голови, активного розгинання тулуба та формування захисної реакції опорності рук у дітей.",
+    description: "Стимуляція контролю голови, activeного розгинання тулуба та формування захисної реакції опорності рук у дітей.",
     executionSteps: [
       "Дитина вкладається животиком на фітбол. Фізичний терапевт фіксує дитину в області тазу або стегон.",
       "М'яч плавно перекочується вперед-вниз. Дитина має рефлекторно підняти голову, розігнути шийно-грудний відділ та витягнути руки вперед для опори.",
@@ -145,3 +145,198 @@ final Map<String, Exercise> exercisesRepository = {
     intensity: ExerciseIntensity.medium,
     category: "👶 Педіатрична реабілітація",
     indications: "ДЦП (спастичний диплегічний або геміпаретичний тип), рухова затримка у дітей віком від 8-10 місяців.",
+    contraindications: "Вивихи або важкі підвивихи кульшових суглобів (без ортезування), виражений остеопороз.",
+    dosage: "По 4-6 переходів у кожен бік.",
+  ),
+
+  // ==========================================
+  // 🦴 КАТЕГОРІЯ 4: ОРТОПЕДІЯ ТА ТРАВМАТОЛОГІЯ
+  // ==========================================
+  "ORTHO_01": Exercise(
+    id: "ORTHO_01",
+    title: "Ізометричне скорочення чотирьохголового м'яза (Quad Sets)",
+    description: "Профілактика гіпотрофії m. quadriceps femoris в умовах іммобілізації або раннього післяопераційного періоду без осьового навантаження на суглоб.",
+    executionSteps: [
+      "Вихідне положення: пацієнт лежить на спині, нога максимально випрямлена в конілі. Під підколінну ямку можна покласти тонкий згорнутий рушник.",
+      "Пацієнт напружує м'язи передньої поверхні стегна, наче намагаючись втиснути коліно вниз, у кушетку.",
+      "Носок стопи при цьому тягнеться на себе (тильне згинання).",
+      "Напруження утримується протягом 5-6 секунд, після чого слідує повне розслаблення на 4 секунди. Дихання не затримувати!"
+    ],
+    ageGroup: ExerciseAgeGroup.all,
+    intensity: ExerciseIntensity.low,
+    category: "🦴 Ортопедична реабілітація",
+    indications: "Ранній етап після ендопротезування колінного або кульшового суглоба, артроскопія (пластика ПХЗ), тривала іммобілізація кінцівки.",
+    contraindications: "Гострий тромбофлебіт, больовий синдром вище 8 балів за VAS/NPRS при напруженні.",
+    dosage: "2-3 підходи по 10-15 повторень, виконувати кілька разів на день.",
+  ),
+  "ORTHO_02": Exercise(
+    id: "ORTHO_02",
+    title: "Екстензія коліна сидячи з еластичною стрічкою (Термінальне розгинання)",
+    description: "Зміцнення внутрішньої порції квадрицепса (m. vastus medialis) для стабілізації надколінка на пізніх етапах ортопедичної реабілітації.",
+    executionSteps: [
+      "Пацієнт сидить на високій кушетці, ноги звисають під кутом 90°.",
+      "Еластична стрічка (терабанд) фіксується одним кінцем за ніжку кушетки, іншим — навколо кісточки пацієнта.",
+      "Пацієнт плавно розгинає коліно до кута 0° (повна екстензія), фіксує положення на 2 секунди.",
+      "Повільно, чинячи опір стрічці, повертає ногу у вихідне положення. Рух контрольований, без ривків."
+    ],
+    ageGroup: ExerciseAgeGroup.adult,
+    intensity: ExerciseIntensity.high,
+    category: "🦴 Ортопедична реабілітація",
+    indications: "Пателофеморальний больовий синдром, хронічна нестабільність колінного суглоба, етап відновлення після пластики зв'язок (через 6-8 тижнів).",
+    contraindications: "Гострий синовіт, ранній післяопераційний період (до дозволу на активне розгинання з опором), повний розрив сухожилля квадрицепса.",
+    dosage: "3 підходи по 10-12 повторень.",
+  ),
+
+  // ==========================================
+  // 👵 КАТЕГОРІЯ 5: ГЕРІАТРІЯ
+  // ==========================================
+  "GER_01": Exercise(
+    id: "GER_01",
+    title: "Тандемна ходьба вздовж стабільної опори (Tandem Walking)",
+    description: "Звуження площі опори для стимуляції пропріоцепції та динамічного балансу. Ключова рекомендація для пацієнтів з високим ризиком падінь за шкалою Берга.",
+    executionSteps: [
+      "Пацієнт стоїть боком до шведської стінки або поручня на відстані кількох сантиметрів (для страховки).",
+      "Починає повільний рух вперед по прямій лінії, ставлячи п'яту однієї стопи впритул перед носком іншої стопи.",
+      "Погляд тримати прямо перед собою, не дивитися постійно на підлогу.",
+      "Дійшовши до кінця лінії (10-12 кроків), пацієнт акуратно розвертається і повторює рух у зворотний бік."
+    ],
+    ageGroup: ExerciseAgeGroup.geriatric,
+    intensity: ExerciseIntensity.medium,
+    category: "👵 Геріатрична реабілітація",
+    indications: "Вікове погіршення балансу, сенсорна атаксія, профілактика травматизму у літніх людей з остеопорозом.",
+    contraindications: "Грубі когнітивні порушення (деменція важкого ступеня — неможливість виконати інструкцію), ортостатична гіпотензія, гостре запаморочення (ДППГ).",
+    dosage: "3-4 проходи лінії довжиною 3 метри.",
+  ),
+  "GER_02": Exercise(
+    id: "GER_02",
+    title: "Вправа 'Встань та сядь' з контролем рук (Chair Squats)",
+    description: "Зміцнення м'язів-розгиначів стегна та тазу, покращення функціональної незалежності літніх людей у побуті.",
+    executionSteps: [
+      "Вихідне положення: пацієнт сидить на стільці зі стабільною спинкою (висота ~45 см), стопи на ширині плечей.",
+      "Руки схрещені на грудях (щоб виключити допомогу рук і перенести навантаження на ноги).",
+      "Пацієнт нахиляє корпус трохи вперед і за рахунок м'язів ніг плавно встає у повний зріст.",
+      "Фіксує вертикальне положення на 1 секунду і так само плавно, підконтрольно опускається назад на стілець."
+    ],
+    ageGroup: ExerciseAgeGroup.geriatric,
+    intensity: ExerciseIntensity.medium,
+    category: "👵 Геріатрична реабілітація",
+    indications: "Саркопенія (вікова слабкість м'язів), низькі показники тесту 'Встань та йди' (TUG), підготовка до самостійного пересування.",
+    contraindications: "Важкий коксартроз або гонартроз у стадії загострення, гостра серцево-судинна недостатність.",
+    dosage: "2 підходи по 8-10 повторень з відпочинком між підходами 90 секунд.",
+  ),
+};
+
+class ExercisesCatalogView extends StatelessWidget {
+  const ExercisesCatalogView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Exercise> allExercises = exercisesRepository.values.toList();
+    final List<String> categories = allExercises.map((e) => e.category).toSet().toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Каталог вправ'),
+        centerTitle: true,
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final categoryName = categories[index];
+          final categoryExercises = allExercises.where((e) => e.category == categoryName).toList();
+
+          return Card(
+            margin: const EdgeInsets.bottom(16.0),
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: ExpansionTile(
+              leading: const Icon(Icons.fitness_center, color: Colors.blue),
+              title: Text(
+                categoryName,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              subtitle: Text('Доступно вправ: ${categoryExercises.length}'),
+              children: categoryExercises.map((exercise) {
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  title: Text(
+                    exercise.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    exercise.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (context) => DraggableScrollableSheet(
+                        initialChildSize: 0.7,
+                        maxChildSize: 0.9,
+                        minChildSize: 0.5,
+                        expand: false,
+                        builder: (context, scrollController) => ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            Text(exercise.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                            const Divider(height: 24),
+                            _buildInfoSection('Опис:', exercise.description),
+                            _buildInfoSection('Показання:', exercise.indications),
+                            _buildInfoSection('Протипоказання:', exercise.contraindications),
+                            _buildInfoSection('Рекомендоване дозування:', exercise.dosage),
+                            const SizedBox(height: 12),
+                            const Text('Покрокове виконання:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            const SizedBox(height: 8),
+                            ...exercise.executionSteps.asMap().entries.map((entry) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 10,
+                                      backgroundColor: Colors.blue.shade100,
+                                      child: Text('${entry.key + 1}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(child: Text(entry.value)),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.bottom(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+          const SizedBox(height: 2),
+          Text(content, style: const TextStyle(fontSize: 15)),
+        ],
+      ),
+    );
+  }
+}
