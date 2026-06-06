@@ -129,7 +129,6 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
         ),
         body: Column(
           children: [
-            // Панель живого пошуку по шкалах
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: TextField(
@@ -165,7 +164,6 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
     List<Widget> categoryWidgets = [];
 
     for (var cat in sourceData) {
-      // Фільтруємо елементи категорії відповідно до пошукового запиту
       List<dynamic> filteredItems = cat["items"].where((item) {
         String name = item["name"].toString().toLowerCase();
         String desc = item["desc"].toString().toLowerCase();
@@ -211,7 +209,7 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue.shade700,
                                 foregroundColor: Colors.white,
-                                size: const Size(110, 36),
+                                fixedSize: const Size(110, 36), // ТУТ ВИПРАВЛЕНО НА ПРАВИЛЬНИЙ fixedSize
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               icon: const Icon(Icons.play_arrow, size: 16),
