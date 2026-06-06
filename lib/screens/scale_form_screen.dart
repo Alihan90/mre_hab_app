@@ -91,7 +91,7 @@ class _ScaleFormScreenState extends State<ScaleFormScreen> {
                   ),
                   if (interpretation.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Text(interpretation, style: const TextStyle(color: Colors.white90, fontSize: 12, fontWeight: FontWeight.w500)),
+                    Text(interpretation, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
                   ]
                 ],
               ),
