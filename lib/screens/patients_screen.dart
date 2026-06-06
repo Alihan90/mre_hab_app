@@ -443,13 +443,19 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                         children: [
                           const Text('Тривалість плану: ', style: TextStyle(fontSize: 13)),
                           DropdownButton<int>(
-                            value: irp.plannedDays,
+                            value: irp.plannedDays ?? 3, // Безпечний дефолт
+                            dropdownColor: Colors.purple.shade50,
                             items: [3, 5, 7, 10, 14].map((int value) {
-                              return DropdownMenuItem<int>(value: value, child: Text('$value днів'));
+                              return DropdownMenuItem<int>(
+                                value: value, 
+                                child: Text('$value днів'),
+                              );
                             }).toList(),
                             onChanged: (val) {
                               if (val != null) {
-                                setState(() => irp.plannedDays = val);
+                                setState(() {
+                                  irp.plannedDays = val;
+                                });
                                 widget.onUpdate();
                               }
                             },
@@ -457,32 +463,45 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           const Spacer(),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
-                            onPressed: _generateSmartIrpSchedule,
+                            onPressed: () {
+                              // Безпечний виклик генерації із захистом від падіння екрану
+                              try {
+                                _generateSmartIrpSchedule();
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Помилка генерації баз вправ: $e')),
+                                );
+                              }
+                            },
                             icon: const Icon(Icons.auto_awesome, size: 16),
                             label: const Text('Згенерувати вправи', style: TextStyle(fontSize: 11)),
                           )
                         ],
                       ),
                       
-                      // Відображення сітки розбитих по днях некопіювальних вправ
-                      if (irp.daysSchedule.isNotEmpty)
+                      // Відображення сітки розбитих по днях вправ
+                      if (irp.daysSchedule != null && irp.daysSchedule.isNotEmpty)
                         ...irp.daysSchedule.entries.map((dayEntry) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: ExpansionTile(
+                              iconColor: Colors.purple,
                               title: Text('День ${dayEntry.key} — Комплекс втручань', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.purple)),
-                              children: dayEntry.value.map((customEx) {
+                              children: dayEntry.value.map<Widget>((customEx) {
                                 return ListTile(
                                   dense: true,
                                   leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-                                  title: Text(customEx.title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                  subtitle: Text('Дозування: ${customEx.dosage}'),
+                                  title: Text(customEx.title ?? 'Вправа', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                  subtitle: Text('Дозування: ${customEx.dosage ?? ''}'),
                                   trailing: IconButton(
                                     icon: const Icon(Icons.edit_road, size: 18, color: Colors.grey),
-                                    tooltip: 'Змінити дозування/повторення вручну',
-                                    onPressed: () => _editTextField('Дозування вправи', customEx.dosage, (val) {
-                                      customEx.dosage = val;
-                                      customEx.isCustomized = true;
+                                    tooltip: 'Змінити дозування вручну',
+                                    onPressed: () => _editTextField('Дозування вправи', customEx.dosage ?? '', (val) {
+                                      setState(() {
+                                        customEx.dosage = val;
+                                        customEx.isCustomized = true;
+                                      });
+                                      widget.onUpdate();
                                     }),
                                   ),
                                 );
@@ -500,7 +519,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                 ),
               ),
             ),
-
             // ==========================================
             // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ ЗА ШКАЛАМИ
             // ==========================================
