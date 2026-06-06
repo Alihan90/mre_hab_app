@@ -1,5 +1,8 @@
 // lib/screens/goniometry_test_screen.dart
 import 'package:flutter/material.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:async';
+import 'dart:math' as math;
 import '../models.dart';
 
 class GoniometryInteractiveTestScreen extends StatefulWidget {
@@ -22,18 +25,47 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
   ];
 
   final Map<int, int> _enteredValues = {};
+  final Map<int, TextEditingController> _controllers = {};
   final TextEditingController _notesController = TextEditingController();
+
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  int _currentDeviceAngle = 0;
+  int? _activeMeasuringIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < _jointsNormative.length; i++) {
+      _controllers[i] = TextEditingController();
+    }
+    _startListeningSensors();
+  }
+
+  void _startListeningSensors() {
+    _accelerometerSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
+      if (_activeMeasuringIndex != null) {
+        // Розраховуємо кут нахилу пристрою на основі акселерометра (вектори X та Y)
+        double radians = math.atan2(event.x, event.y);
+        int angle = (radians * 180 / math.pi).round().abs();
+        setState(() {
+          _currentDeviceAngle = angle;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _accelerometerSubscription?.cancel();
     _notesController.dispose();
+    _controllers.forEach((_, c) => c.dispose());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
+    return SafeArea(
+      child: Column(
         children: [
           Container(
             width: double.infinity,
@@ -41,9 +73,9 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
             padding: const EdgeInsets.all(12),
             child: Text(
               widget.onSaveResult != null 
-                ? "Запис вимірювань активний (дані будуть внесені до карти пацієнта)"
-                : "Автономний режим перегляду норм гоніометрії",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange.shade900, fontSize: 13),
+                ? "Запис у карту пацієнта активний. Використовуйте ручне введення або датчики телефону."
+                : "Автономний режим: вимірювання кутів та перегляд анатомічних норм рухів.",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange.shade900, fontSize: 12),
             ),
           ),
           Expanded(
@@ -54,6 +86,7 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                 final item = _jointsNormative[index];
                 final enteredValue = _enteredValues[index];
                 bool isDeficit = enteredValue != null && enteredValue < item.normalValue;
+                bool isCurrentlyMeasuring = _activeMeasuringIndex == index;
 
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6),
@@ -64,7 +97,7 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween, // ВИПРАВЛЕНО ТУТ!
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Column(
@@ -84,7 +117,39 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                         ),
                         const SizedBox(height: 6),
                         Text(item.instruction, style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
+                        
+                        // Зона живого гоніометра, яка активується кнопкою смартфона
+                        if (isCurrentlyMeasuring)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(8)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.screen_rotation, color: Colors.orange),
+                                    const SizedBox(width: 8),
+                                    Text("Кут телефону: $_currentDeviceAngle°", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  ],
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade800),
+                                  onPressed: () {
+                                    setState(() {
+                                      _enteredValues[index] = _currentDeviceAngle;
+                                      _controllers[index]!.text = _currentDeviceAngle.toString();
+                                      _activeMeasuringIndex = null; // Закриваємо режим вимірювання
+                                    });
+                                  },
+                                  child: const Text("Зафіксувати кут", style: TextStyle(color: Colors.white)),
+                                )
+                              ],
+                            ),
+                          ),
+
                         Row(
                           children: [
                             const Text("Кут: ", style: TextStyle(fontWeight: FontWeight.w500)),
@@ -93,6 +158,7 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                               width: 80,
                               height: 38,
                               child: TextField(
+                                controller: _controllers[index],
                                 keyboardType: TextInputType.number,
                                 decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8), suffixText: "°"),
                                 onChanged: (val) {
@@ -102,7 +168,22 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                                 },
                               ),
                             ),
-                            const SizedBox(width: 15),
+                            const SizedBox(width: 10),
+                            // Кнопка для старту вимірювання телефоном
+                            IconButton(
+                              icon: Icon(isCurrentlyMeasuring ? Icons.cancel : Icons.phone_android, color: Colors.blue.shade700),
+                              tooltip: "Виміряти нахилом телефону",
+                              onPressed: () {
+                                setState(() {
+                                  if (isCurrentlyMeasuring) {
+                                    _activeMeasuringIndex = null;
+                                  } else {
+                                    _activeMeasuringIndex = index;
+                                  }
+                                });
+                              },
+                            ),
+                            const Spacer(),
                             if (enteredValue != null)
                               Row(
                                 children: [
@@ -129,7 +210,7 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
               children: [
                 TextField(
                   controller: _notesController,
-                  decoration: const InputDecoration(labelText: "Клінічний коментар терапевта", border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: "Загальний клінічний коментар терапевта", border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -138,7 +219,7 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                     onPressed: _enteredValues.isEmpty ? null : () => _saveData(),
-                    child: const Text("Зберегти дані гоніометрії", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Text("Зберегти результати вимірювань", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -156,18 +237,18 @@ class _GoniometryInteractiveTestScreenState extends State<GoniometryInteractiveT
       summary += "${item.jointName} (${item.movementType}): $val°; ";
     });
     if (_notesController.text.isNotEmpty) {
-      summary += " Коментар: ${_notesController.text}";
+      summary += "Коментар: ${_notesController.text}";
     }
 
     if (widget.onSaveResult != null) {
-      widget.onSaveResult!("Гоніометрія", summary);
+      widget.onSaveResult!("Гоніометрія за суглобами", summary);
     }
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Збережено"),
-        content: const Text("Дані успішно записані до протоколу реабілітації пацієнта."),
+        title: const Text("Дані збережено"),
+        content: const Text("Результати апаратного вимірювання зафіксовані в журналі фізичного терапевта."),
         actions: [
           TextButton(onPressed: () { Navigator.pop(ctx); }, child: const Text("ОК"))
         ],
