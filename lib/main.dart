@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:amre_hab_app/screens/exercises_catalog_view.dart';
 import 'package:flutter/material.dart';
 import 'screens/patients_screen.dart';
 import 'screens/scales_catalog_screen.dart';
@@ -106,14 +107,14 @@ class MainDashboardScreen extends StatelessWidget {
                   ),
 
                   // 5. Вправи та ЛФК
-                  _buildDashboardCard(
-                    context,
-                    title: "Вправи та ЛФК",
-                    subtitle: "Протоколи занять",
-                    icon: Icons.fitness_center,
-                    color: Colors.purple.shade600,
-                    destination: null,
-                  ),
+                 _buildDashboardCard(
+  context,
+  title: "Вправи та ЛФК",
+  subtitle: "Протоколи занять",
+  icon: Icons.fitness_center,
+  color: Colors.purple.shade600,
+  destination: const ExercisesCatalogView(), // Тепер плитка відкриватиме вправи!
+),
 
                   // 6. Налаштування
                   _buildDashboardCard(
