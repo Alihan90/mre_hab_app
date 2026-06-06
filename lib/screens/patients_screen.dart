@@ -435,6 +435,8 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Card(
+                // Оскільки shade50 обчислюється під час виконання, 
+                // перед самою карткою Card або Column НЕ повинно бути слова const
                 color: Colors.purple.shade50,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -447,6 +449,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                         children: [
                           const Text('Тривалість плану: ', style: TextStyle(fontSize: 13)),
                           DropdownButton<int>(
+                            // Захист: якщо irp або plannedDays дорівнює null, ставимо дефолт 3
                             value: irp.plannedDays ?? 3, 
                             dropdownColor: Colors.purple.shade50,
                             items: [3, 5, 7, 10, 14].map((int value) {
