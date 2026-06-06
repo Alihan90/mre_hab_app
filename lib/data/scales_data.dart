@@ -30,7 +30,6 @@ class ScaleProtocol {
   final String id;
   final String name;
   final ScaleType type;
-  final ScaleCategory category; 
   final String Function(int) interpreter;
   final List<ScaleOption>? globalOptions;
   final List<ScaleQuestion> questions;
@@ -39,7 +38,6 @@ class ScaleProtocol {
     required this.id,
     required this.name,
     required this.type,
-    required this.category, // І ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО
     required this.interpreter,
     this.globalOptions,
     required this.questions,
