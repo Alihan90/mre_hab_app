@@ -175,3 +175,75 @@ class Mkh10Data {
     'M75.0': 'Адгезивний капсуліт плеча (Синдром замороженого плеча)',
   };
 }
+class JointMovementNorm {
+  final String jointName;       // Назва суглоба (наприклад, "Плечовий суглоб")
+  final String movementType;    // Рух (наприклад, "Згинання", "Розгинання")
+  final int normalValue;        // Норма в градусах
+  final String instruction;     // Положення пацієнта та орієнтири
+
+  JointMovementNorm({
+    required this.jointName,
+    required this.movementType,
+    required this.normalValue,
+    required this.instruction,
+  });
+}
+
+class GoniometryTestResult {
+  final String id;
+  final String? patientId;      
+  final DateTime date;
+  final Map<String, int> measuredValues; // [Суглоб_Рух : Градуси]
+  final String notes;           
+
+  GoniometryTestResult({
+    required this.id,
+    this.patientId,
+    required this.date,
+    required this.measuredValues,
+    required this.notes,
+  });
+}
+
+class ScaleQuestion {
+  final String id;
+  final String title;       
+  final String description; 
+  final List<ScaleOption> options; 
+
+  ScaleQuestion({required this.id, required this.title, required this.description, required this.options});
+}
+
+class ScaleOption {
+  final int score;         
+  final String text;       
+  final String? criteria;  
+
+  ScaleOption({required this.score, required this.text, this.criteria});
+}
+
+class ScaleInterpretation {
+  final int minScore;
+  final int maxScore;
+  final String resultTitle; 
+  final String description; 
+
+  ScaleInterpretation({required this.minScore, required this.maxScore, required this.resultTitle, required this.description});
+}
+
+class ClinicalScale {
+  final String id;
+  final String name;             
+  final String fullName;         
+  final String category;         
+  final String ageGroup;         
+  final String instructions;     
+  final List<ScaleQuestion> questions;
+  final List<ScaleInterpretation> interpretations;
+
+  ClinicalScale({
+    required this.id, required this.name, required this.fullName, 
+    required this.category, required this.ageGroup, required this.instructions, 
+    required this.questions, required this.interpretations
+  });
+}
