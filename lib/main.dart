@@ -21,6 +21,11 @@ class RehabilitationApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey.shade100,
       ),
+      // ВСТАВЛЯЄМО ОЦІ РЯДКИ ДЛЯ ПІДТРИМКИ УКРАЇНСЬКОЇ КЛАВІАТУРИ:
+      supportedLocales: const [
+        Locale('uk', 'UA'), // Українська розкладка
+        Locale('en', 'US'), // Англійська розкладка
+      ],
       home: const MainDashboardScreen(),
     );
   }
