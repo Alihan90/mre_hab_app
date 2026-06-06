@@ -128,3 +128,43 @@ class ScaleHistoryPoint {
     required this.score,
   });
 }
+// --- Моделі для каталогу вправ ---
+enum ExerciseAgeGroup { all, child, adult, geriatric }
+enum ExerciseIntensity { low, medium, high }
+
+class Exercise {
+  final String id;
+  final String title;
+  final String category;
+  final String description;
+  final String dosage;
+  final List<String> contraindications;
+  final ExerciseAgeGroup ageGroup;
+  final ExerciseIntensity intensity;
+
+  const Exercise({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.description,
+    required this.dosage,
+    required this.contraindications,
+    required this.ageGroup,
+    required this.intensity,
+  });
+}
+
+// --- Модель для гоніометрії ---
+class JointMovementNorm {
+  final String jointName;
+  final String movementType;
+  final int normalValue;
+  final String instruction;
+
+  const JointMovementNorm({
+    required this.jointName,
+    required this.movementType,
+    required this.normalValue,
+    required this.instruction,
+  });
+}
