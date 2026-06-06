@@ -30,7 +30,7 @@ jobs:
 
       - name: Auto-generate Android Wrapper
         run: |
-          flutter create . --platforms=android --force
+          flutter create . --platforms=android
 
       - name: Install dependencies
         run: flutter pub get
