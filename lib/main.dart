@@ -1,7 +1,11 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+
+// Імпортуємо ВСІ твої робочі екрани
 import 'screens/patients_screen.dart';
-import 'screens/scales_catalog_screen.dart'; // Імпортуємо наш каталог шкал та гоніометрії
+import 'screens/scales_catalog_screen.dart';
+import 'screens/icd_screen.dart';           // Твій екран МКХ-10
+import 'screens/smart_goals_screen.dart';   // Твій конструктор цілей SMART
 
 void main() {
   runApp(const RehabilitationApp());
@@ -39,35 +43,24 @@ class MainDashboardScreen extends StatelessWidget {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle, size: 28),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Привітання та статус терапевта
             Text(
               "Вітаємо, Фізичний терапевт!",
-              style: TextStyle(
-                fontSize: 22, 
-                fontWeight: FontWeight.bold, 
-                color: Colors.blue.shade900
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
             ),
             const SizedBox(height: 4),
             Text(
-              "Оберіть необхідний інструмент або перейдіть до карти пацієнта",
+              "Усі професійні модулі відновлено та підключено:",
               style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 20),
 
-            // Головна інтерактивна сітка робочого столу (6 плиток)
+            // Головна інтерактивна сітка робочого столу
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
@@ -84,51 +77,51 @@ class MainDashboardScreen extends StatelessWidget {
                     destination: const PatientsScreen(),
                   ),
 
-                  // 2. Новий модуль: Клінічні шкали та Гоніометр
+                  // 2. Клінічні шкали (Твій повний список)
                   _buildDashboardCard(
                     context,
                     title: "Клінічні шкали",
                     subtitle: "16 тестів та Гоніометрія",
                     icon: Icons.assignment,
                     color: Colors.indigo.shade600,
-                    destination: const ScalesCatalogScreen(), // Відкриває автономний каталог шкал
+                    destination: const ScalesCatalogScreen(),
                   ),
 
-                  // 3. Модуль Вправ (План реабілітації)
+                  // 3. Смарт конструктор цілей (SMART)
                   _buildDashboardCard(
                     context,
-                    title: "Комплекси вправ",
-                    subtitle: "Призначення та ЛФК",
-                    icon: Icons.fitness_center,
+                    title: "Конструктор цілей",
+                    subtitle: "SMART критерії",
+                    icon: Icons.track_changes,
                     color: Colors.green.shade600,
-                    destination: null, // Сюди підставиш свій екран вправ, коли він буде готовий
+                    destination: const SmartGoalsScreen(), // ПІДКЛЮЧЕНО!
                   ),
 
-                  // 4. Модуль Аналітики / Звітів
+                  // 4. Класифікатор МКХ-10
                   _buildDashboardCard(
                     context,
-                    title: "Звіти динаміки",
-                    subtitle: "Графіки відновлення",
-                    icon: Icons.bar_chart,
+                    title: "МКХ-10 / МКФ",
+                    subtitle: "Діагностичні коди",
+                    icon: Icons.assignment_turned_in,
                     color: Colors.amber.shade700,
-                    destination: null,
+                    destination: const IcdScreen(), // ПІДКЛЮЧЕНО!
                   ),
 
-                  // 5. Довідник терапевта (Анатомія, норми рухів)
+                  // 5. Комплекси вправ (ЛФК)
                   _buildDashboardCard(
                     context,
-                    title: "Довідник",
-                    subtitle: "Анатомічні стандарти",
-                    icon: Icons.menu_book,
+                    title: "Вправи та ЛФК",
+                    subtitle: "Протоколи занять",
+                    icon: Icons.fitness_center,
                     color: Colors.purple.shade600,
-                    destination: null,
+                    destination: null, // Додамо екран, як тільки створимо його файл
                   ),
 
-                  // 6. Налаштування профілю/додатку
+                  // 6. Налаштування системи
                   _buildDashboardCard(
                     context,
                     title: "Налаштування",
-                    subtitle: "Конфігурація системи",
+                    subtitle: "Профіль терапевта",
                     icon: Icons.settings,
                     color: Colors.teal.shade600,
                     destination: null,
@@ -142,7 +135,6 @@ class MainDashboardScreen extends StatelessWidget {
     );
   }
 
-  // Універсальний конструктор віджетів-карток для Робочого столу
   Widget _buildDashboardCard(
     BuildContext context, {
     required String title,
@@ -157,16 +149,10 @@ class MainDashboardScreen extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (destination != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => destination),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => destination));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Модуль '$title' знаходиться на стадії налаштування."),
-                duration: const Duration(seconds: 1),
-              ),
+              SnackBar(content: Text("Модуль '$title' налаштовується.")),
             );
           }
         },
@@ -179,32 +165,13 @@ class MainDashboardScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
                 child: Icon(icon, size: 32, color: color),
               ),
               const Spacer(),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 15,
-                  height: 1.2,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.2)),
               const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 11, 
-                  color: Colors.grey.shade600,
-                  height: 1.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey.shade600, height: 1.2)),
             ],
           ),
         ),
