@@ -432,7 +432,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
             // ==========================================
            // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП (БЕЗПЕЧНИЙ)
             // ==========================================
-            Padding(
+Padding(
               padding: const EdgeInsets.all(12.0),
               child: Card(
                 color: Colors.purple.shade50,
@@ -441,7 +441,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('🗓️ ️Планувальник ІРП за днями', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.purple)),
+                      const Text('🗓️ Планувальник ІРП за днями', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.purple)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -481,7 +481,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           )
                         ],
                       ),
-                      
                       if (irp.daysSchedule != null && irp.daysSchedule.isNotEmpty)
                         ...irp.daysSchedule.entries.map((dayEntry) {
                           return Padding(
@@ -512,7 +511,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           );
                         }).toList()
                       else
-                         Padding(
+                        const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Text('План порожній. Оберіть кількість днів та натисніть "Згенерувати вправи".', style: TextStyle(fontSize: 12, color: Colors.grey)),
                         )
@@ -522,6 +521,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
+            // ==========================================
             // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ
             // ==========================================
             Padding(
@@ -541,7 +541,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                       )
                     ],
                   ),
-                  
                   if (widget.patient.visits == null || widget.patient.visits.isEmpty)
                     const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
                   else
@@ -560,7 +559,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Візит від ${visit.date.day.toString().padLeft(2, '0')}.${visit.date.month.toString().padLeft(2, '0')}.${visit.date.year} о ${visit.date.hour.toString().padLeft(2, '0')}:${visit.date.minute.toString().padLeft(2, '0')}', 
+                                  'Візит від ${visit.date.day.toString().padLeft(2, '0')}.${visit.date.month.toString().padLeft(2, '0')}.${visit.date.year}', 
                                   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
                                 ),
                                 const SizedBox(height: 6),
@@ -609,119 +608,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                         );
                                       } catch (e) {
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Екран шкали недоступний або сталася помилка: $e')),
-                                        );
-                                      }
-                                    },
-                                    icon: const Icon(Icons.analytics, size: 16),
-                                    label: const Text('Запустити клінічне тестування шкал', style: TextStyle(fontSize: 11)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-}
-            // ==========================================
-            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ
-            // ==========================================
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(child: Text('🗒️ Фіксація візитів:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
-                        onPressed: _createNewVisit,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Додати візит', style: TextStyle(fontSize: 12)),
-                      )
-                    ],
-                  ),
-                  
-                  if (widget.patient.visits == null || widget.patient.visits.isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: widget.patient.visits.length,
-                      itemBuilder: (context, vIndex) {
-                        final visit = widget.patient.visits[vIndex];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          color: Colors.grey.shade50,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Візит від ${visit.date.day.toString().padLeft(2, '0')}.${visit.date.month.toString().padLeft(2, '0')}.${visit.date.year} о ${visit.date.hour.toString().padLeft(2, '0')}:${visit.date.minute.toString().padLeft(2, '0')}', 
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
-                                ),
-                                const SizedBox(height: 6),
-                                TextFormField(
-                                  initialValue: visit.therapeuticNote,
-                                  decoration: const InputDecoration(labelText: 'Щоденник візиту', border: OutlineInputBorder()),
-                                  maxLines: null,
-                                  onChanged: (text) {
-                                    visit.therapeuticNote = text;
-                                    widget.onUpdate();
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                if (visit.testResults != null && visit.testResults.isNotEmpty) ...[
-                                  const Text('Проведені тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                                  ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
-                                  const SizedBox(height: 8),
-                                ],
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade600, foregroundColor: Colors.white),
-                                    onPressed: () {
-                                      try {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ScalesCatalogScreen(
-                                              onScaleTested: (scaleName, result) {
-                                                setState(() {
-                                                  visit.testResults[scaleName] = result;
-                                                  RegExp regExp = RegExp(r'\d+');
-                                                  var match = regExp.firstMatch(result);
-                                                  double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
-                                                  
-                                                  widget.patient.scaleHistory.add(ScaleHistoryPoint(
-                                                    date: DateTime.now(),
-                                                    scaleName: scaleName,
-                                                    score: scoreValue,
-                                                  ));
-                                                });
-                                                widget.onUpdate();
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Екран шкали недоступний або сталася помилка: $e')),
+                                          SnackBar(content: Text('Екран шкали недоступний: $e')),
                                         );
                                       }
                                     },
