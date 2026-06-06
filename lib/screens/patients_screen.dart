@@ -512,7 +512,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           );
                         }).toList()
                       else
-                        const Padding(
+                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Text('План порожній. Оберіть кількість днів та натисніть "Згенерувати вправи".', style: TextStyle(fontSize: 12, color: Colors.grey)),
                         )
@@ -879,7 +879,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           );
                         }).toList()
                       else
-                        const Padding(
+                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Text('План порожній. Оберіть кількість днів та натисніть "Згенерувати вправи".', style: TextStyle(fontSize: 12, color: Colors.grey)),
                         )
@@ -907,8 +907,13 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
-            if (patient.visits.isEmpty)
-              const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
+            if (widget.patient.visits == null || widget.patient.visits.isEmpty)
+  Center(
+    child: Padding(
+      padding: const EdgeInsets.all(20.0), 
+      child: const Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey)),
+    ),
+  )
             else
               ListView.builder(
                 shrinkWrap: true,
@@ -962,7 +967,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                           var match = regExp.firstMatch(result);
                                           double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
                                           
-                                          patient.scaleHistory.add(ScaleHistoryPoint(
+                                          widget.patient.scaleHistory.add(
                                             date: DateTime.now(),
                                             scaleName: scaleName,
                                             score: scoreValue,
