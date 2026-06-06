@@ -203,7 +203,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
     final irp = widget.patient.irp;
     irp.daysSchedule.clear();
 
-    // Витягуємо ключі з нашого глобального репозиторію вправ
     List<String> matchingKeys = [];
     String diag = widget.patient.diagnosisMkh10.toLowerCase();
 
@@ -214,15 +213,13 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
     } else if (diag.contains('дцп') || diag.contains('g80')) {
       matchingKeys = ["PEDS_01", "PEDS_02", "RESP_01"];
     } else {
-      matchingKeys = ["RESP_01", "RESP_02", "GER_02"]; // Дефолтний базовий набір
+      matchingKeys = ["RESP_01", "RESP_02", "GER_02"]; 
     }
 
-    // Розподіляємо вправи чергуванням за днями тижня, щоб уникнути монотонності
     for (int day = 1; day <= irp.plannedDays; day++) {
       List<CustomExercise> dayExercises = [];
       
       if (day % 2 != 0) {
-        // Непарні дні: акцент на перші дві вправи нозології
         if (matchingKeys.isNotEmpty) {
           var ex = exercisesRepository[matchingKeys[0]];
           if (ex != null) dayExercises.add(CustomExercise(id: ex.id, title: ex.title, dosage: ex.dosage));
@@ -232,12 +229,10 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
           if (ex != null) dayExercises.add(CustomExercise(id: ex.id, title: ex.title, dosage: ex.dosage));
         }
       } else {
-        // Парні дні: акцент на баланс, дихання та допоміжні системи
         if (matchingKeys.length > 1) {
           var ex = exercisesRepository[matchingKeys[1]];
           if (ex != null) dayExercises.add(CustomExercise(id: ex.id, title: ex.title, dosage: ex.dosage));
         }
-        // Завжди додаємо загальнозміцнюючу геріатричну/корову для різноманітності
         var extra = exercisesRepository["GER_02"];
         if (extra != null) dayExercises.add(CustomExercise(id: extra.id, title: extra.title, dosage: extra.dosage));
       }
@@ -252,19 +247,19 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
     );
   }
 
+  // Фіксація візиту з точним часом
   void _createNewVisit() {
-  final now = DateTime.now();
-  // Форматуємо час, наприклад "14:35"
-  final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
-  setState(() {
-    widget.patient.visits.add(PatientVisit(
-      id: now.millisecondsSinceEpoch.toString(),
-      date: now,
-      therapeuticNote: '[$timeString] Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
-    ));
-  });
-  widget.onUpdate();
-}
+    final now = DateTime.now();
+    final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    setState(() {
+      widget.patient.visits.add(PatientVisit(
+        id: now.millisecondsSinceEpoch.toString(),
+        date: now,
+        therapeuticNote: '[$timeString] Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
+      ));
+    });
+    widget.onUpdate();
+  }
 
   // Вікно для ручного редагування будь-якого текстового поля в ІРП або SMART
   void _editTextField(String title, String currentValue, Function(String) onSave) {
@@ -298,6 +293,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
       appBar: AppBar(
         title: Text(patient.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.teal.shade100,
+        leading: const BackButton(color: Colors.black),
         actions: [
           IconButton(
             icon: const Icon(Icons.share, color: Colors.black),
@@ -324,17 +320,23 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: Text('Діагноз МКХ-10: ${patient.diagnosisMkh10}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-                     IconButton(
-  icon: const Icon(Icons.edit, size: 18, color: Colors.teal),
-  onPressed: () => _editTextField(
-    'Діагноз МКХ-10', 
-    patient.diagnosisMkh10, 
-    (val) {
-      setState(() => patient.diagnosisMkh10 = val);
-      widget.onUpdate();
-    },
-  ),
-)
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 18, color: Colors.teal),
+                        onPressed: () => _editTextField(
+                          'Діагноз МКХ-10', 
+                          patient.diagnosisMkh10, 
+                          (val) {
+                            setState(() => patient.diagnosisMkh10 = val);
+                            widget.onUpdate();
+                          },
+                        ),
+                      )
+                    ],
+                  ),
+                  Text('Дата народження: ${patient.birthDate}  |  Початок циклу: ${patient.admissionDate}', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
 
             // ==========================================
             // БЛОК 2. ДИНАМІЧНИЙ ГРАФІК СТАНУ ПАЦІЄНТА
@@ -350,12 +352,11 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     children: [
                       const Text('📈 Клінічна динаміка стану (Шкали)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       const SizedBox(height: 6),
-                      if (patient.scaleHistory.isEmpty)
+                      if (patient.scaleHistory == null || patient.scaleHistory.isEmpty)
                         const Text('Немає збережених точок тестування для графіка динаміки.', style: TextStyle(fontSize: 11, color: Colors.grey))
                       else ...[
                         Text('Остання оцінка: ${patient.scaleHistory.last.scaleName} -> ${patient.scaleHistory.last.score} балів', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
-                        // Імітація динамічної смуги прогресу хвороби на основі історії результатів
                         Container(
                           height: 24,
                           width: double.infinity,
@@ -379,6 +380,260 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
+            // ==========================================
+            // БЛОК 3. SMART ЦІЛІ ТА МКФ (ВИПРАВЛЕНИЙ МАКЕТ)
+            // ==========================================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('🎯 Постановка цілей SMART (МОЗ)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
+                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) => irp.goalsSmart = val),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        irp.goalsSmart.isEmpty ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart, 
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      const Divider(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo)),
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
+                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) => irp.mfkCodes = val),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        irp.mfkCodes.isEmpty ? 'Натисніть олівець, щоб додати коди МКФ...' : irp.mfkCodes, 
+                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ==========================================
+            // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП (БЕЗПЕЧНИЙ)
+            // ==========================================
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Card(
+                color: Colors.purple.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('🗓️ Планувальник ІРП за днями', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.purple)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text('Тривалість плану: ', style: TextStyle(fontSize: 13)),
+                          DropdownButton<int>(
+                            value: irp.plannedDays ?? 3, 
+                            dropdownColor: Colors.purple.shade50,
+                            items: [3, 5, 7, 10, 14].map((int value) {
+                              return DropdownMenuItem<int>(
+                                value: value, 
+                                child: Text('$value днів'),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() {
+                                  irp.plannedDays = val;
+                                });
+                                widget.onUpdate();
+                              }
+                            },
+                          ),
+                          const Spacer(),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+                            onPressed: () {
+                              try {
+                                _generateSmartIrpSchedule();
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Помилка генерації баз вправ: $e')),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.auto_awesome, size: 16),
+                            label: const Text('Згенерувати вправи', style: TextStyle(fontSize: 11)),
+                          )
+                        ],
+                      ),
+                      
+                      if (irp.daysSchedule != null && irp.daysSchedule.isNotEmpty)
+                        ...irp.daysSchedule.entries.map((dayEntry) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: ExpansionTile(
+                              iconColor: Colors.purple,
+                              title: Text('День ${dayEntry.key} — Комплекс втручань', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.purple)),
+                              children: dayEntry.value.map<Widget>((customEx) {
+                                return ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                                  title: Text(customEx.title ?? 'Вправа', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                  subtitle: Text('Дозування: ${customEx.dosage ?? ''}'),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.edit_road, size: 18, color: Colors.grey),
+                                    tooltip: 'Змінити дозування вручну',
+                                    onPressed: () => _editTextField('Дозування вправи', customEx.dosage ?? '', (val) {
+                                      setState(() {
+                                        customEx.dosage = val;
+                                        customEx.isCustomized = true;
+                                      });
+                                      widget.onUpdate();
+                                    }),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        }).toList()
+                      else
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Text('План порожній. Оберіть кількість днів та натисніть "Згенерувати вправи".', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ==========================================
+            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ
+            // ==========================================
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(child: Text('🗒️ Фіксація візитів:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+                        onPressed: _createNewVisit,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Додати візит', style: TextStyle(fontSize: 12)),
+                      )
+                    ],
+                  ),
+                  
+                  if (patient.visits == null || patient.visits.isEmpty)
+                    const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: patient.visits.length,
+                      itemBuilder: (context, vIndex) {
+                        final visit = patient.visits[vIndex];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: Colors.grey.shade50,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Візит від ${visit.date.day.toString().padLeft(2, '0')}.${visit.date.month.toString().padLeft(2, '0')}.${visit.date.year} о ${visit.date.hour.toString().padLeft(2, '0')}:${visit.date.minute.toString().padLeft(2, '0')}', 
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  initialValue: visit.therapeuticNote,
+                                  decoration: const InputDecoration(labelText: 'Щоденник візиту', border: OutlineInputBorder()),
+                                  maxLines: null,
+                                  onChanged: (text) {
+                                    visit.therapeuticNote = text;
+                                    widget.onUpdate();
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                if (visit.testResults != null && visit.testResults.isNotEmpty) ...[
+                                  const Text('Проведені тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                  ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
+                                  const SizedBox(height: 8),
+                                ],
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade600, foregroundColor: Colors.white),
+                                    onPressed: () {
+                                      try {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ScalesCatalogScreen(
+                                              onScaleTested: (scaleName, result) {
+                                                setState(() {
+                                                  visit.testResults[scaleName] = result;
+                                                  RegExp regExp = RegExp(r'\d+');
+                                                  var match = regExp.firstMatch(result);
+                                                  double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
+                                                  
+                                                  patient.scaleHistory.add(ScaleHistoryPoint(
+                                                    date: DateTime.now(),
+                                                    scaleName: scaleName,
+                                                    score: scoreValue,
+                                                  ));
+                                                });
+                                                widget.onUpdate();
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Екран шкали недоступний або сталася помилка: $e')),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(Icons.analytics, size: 16),
+                                    label: const Text('Запустити клінічне тестування шкал', style: TextStyle(fontSize: 11)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+}
             // ==========================================
             // БЛОК 3. SMART ЦІЛІ ТА МКФ (З МОЖЛИВІСТЮ РУЧНОГО КОРЕГУВАННЯ)
             // ==========================================
