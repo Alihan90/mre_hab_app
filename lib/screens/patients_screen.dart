@@ -379,7 +379,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
             // ==========================================
             // БЛОК 3. SMART ЦІЛІ ТА МКФ (З МОЖЛИВІСТЮ РУЧНОГО КОРЕГУВАННЯ)
             // ==========================================
-            Padding(
+           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Card(
                 elevation: 2,
@@ -392,19 +392,33 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('🎯 Постановка цілей SMART (МОЗ)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
-                          IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) => irp.goalsSmart = val)),
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
+                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) => irp.goalsSmart = val),
+                          ),
                         ],
                       ),
-                      Text(irp.goalsSmart.isEmpty ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart, style: const TextStyle(fontSize: 13)),
-                      const Divider(),
+                      const SizedBox(height: 4),
+                      Text(
+                        irp.goalsSmart.isEmpty ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart, 
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      const Divider(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) => irp.mfkCodes = val)),
+                          const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo)),
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
+                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) => irp.mfkCodes = val),
+                          ),
                         ],
                       ),
-                      Text(irp.mfkCodes, style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                      const SizedBox(height: 4),
+                      Text(
+                        irp.mfkCodes.isEmpty ? 'Натисніть олівець, щоб додати коди МКФ...' : irp.mfkCodes, 
+                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                      ),
                     ],
                   ),
                 ),
