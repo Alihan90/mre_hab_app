@@ -247,7 +247,7 @@ class ExercisesCatalogView extends StatelessWidget {
           final categoryExercises = allExercises.where((e) => e.category == categoryName).toList();
 
           return Card(
-            margin: const EdgeInsets.bottom(16.0),
+            margin: const EdgeInsets.only(bottom: 16.0),
             elevation: 2,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ExpansionTile(
@@ -328,7 +328,7 @@ class ExercisesCatalogView extends StatelessWidget {
 
   Widget _buildInfoSection(String title, String content) {
     return Padding(
-      padding: const EdgeInsets.bottom(12.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
