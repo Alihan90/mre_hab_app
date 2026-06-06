@@ -321,16 +321,17 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: Text('Діагноз МКХ-10: ${patient.diagnosisMkh10}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 18, color: Colors.teal),
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Mkh10Screen(onSelectDiagnosis: (d) => setState(() => patient.diagnosisMkh10 = d)))),
-                      )
-                    ],
-                  ),
-                  Text('Дата народження: ${patient.birthDate}  |  Початок циклу: ${patient.admissionDate}', style: const TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
+                     IconButton(
+  icon: const Icon(Icons.edit, size: 18, color: Colors.teal),
+  onPressed: () => _editTextField(
+    'Діагноз МКХ-10', 
+    patient.diagnosisMkh10, 
+    (val) {
+      setState(() => patient.diagnosisMkh10 = val);
+      widget.onUpdate();
+    },
+  ),
+)
 
             // ==========================================
             // БЛОК 2. ДИНАМІЧНИЙ ГРАФІК СТАНУ ПАЦІЄНТА
