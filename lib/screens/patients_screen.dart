@@ -253,15 +253,18 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
   }
 
   void _createNewVisit() {
-    setState(() {
-      widget.patient.visits.add(PatientVisit(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        date: DateTime.now(),
-        therapeuticNote: 'Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
-      ));
-    });
-    widget.onUpdate();
-  }
+  final now = DateTime.now();
+  // Форматуємо час, наприклад "14:35"
+  final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+  setState(() {
+    widget.patient.visits.add(PatientVisit(
+      id: now.millisecondsSinceEpoch.toString(),
+      date: now,
+      therapeuticNote: '[$timeString] Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
+    ));
+  });
+  widget.onUpdate();
+}
 
   // Вікно для ручного редагування будь-якого текстового поля в ІРП або SMART
   void _editTextField(String title, String currentValue, Function(String) onSave) {
