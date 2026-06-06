@@ -54,10 +54,7 @@ class MainDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Вітаємо, Фізичний терапевт!",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
-            ),
+            
             const SizedBox(height: 4),
             Text(
               "Оберіть необхідний клінічний інструмент:",
