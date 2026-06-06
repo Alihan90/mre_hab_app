@@ -25,12 +25,14 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # Робот сам візьме поточну стабільну версію, яка працювала у білді №52
+          flutter-version: '3.22.2' # Фіксуємо стабільну версію, яка точно збирала ваш проект без помилок Gradle
+          channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK Release
+        # Збірка під усі типи процесорів (включаючи ваш OPPO А17)
         run: flutter build apk --release --no-tree-shake-icons --target-platform android-arm,android-arm64
 
       - name: Upload APK Artifact
