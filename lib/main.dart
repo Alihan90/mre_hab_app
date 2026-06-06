@@ -1,11 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
-
-// Імпортуємо ВСІ твої робочі екрани
 import 'screens/patients_screen.dart';
 import 'screens/scales_catalog_screen.dart';
-import 'screens/icd_screen.dart';           // Твій екран МКХ-10
-import 'screens/smart_goals_screen.dart';   // Твій конструктор цілей SMART
 
 void main() {
   runApp(const RehabilitationApp());
@@ -29,6 +25,9 @@ class RehabilitationApp extends StatelessWidget {
   }
 }
 
+// ==========================================
+// 1. ГОЛОВНИЙ ЕКРАН — РОБОЧИЙ СТІЛ (6 ПЛИТОК)
+// ==========================================
 class MainDashboardScreen extends StatelessWidget {
   const MainDashboardScreen({Key? key}) : super(key: key);
 
@@ -55,19 +54,18 @@ class MainDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Усі професійні модулі відновлено та підключено:",
+              "Оберіть необхідний клінічний інструмент:",
               style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 20),
 
-            // Головна інтерактивна сітка робочого столу
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
                 children: [
-                  // 1. Модуль Пацієнтів
+                  // 1. Пацієнти
                   _buildDashboardCard(
                     context,
                     title: "Пацієнти",
@@ -77,7 +75,7 @@ class MainDashboardScreen extends StatelessWidget {
                     destination: const PatientsScreen(),
                   ),
 
-                  // 2. Клінічні шкали (Твій повний список)
+                  // 2. Клінічні шкали
                   _buildDashboardCard(
                     context,
                     title: "Клінічні шкали",
@@ -87,14 +85,14 @@ class MainDashboardScreen extends StatelessWidget {
                     destination: const ScalesCatalogScreen(),
                   ),
 
-                  // 3. Смарт конструктор цілей (SMART)
+                  // 3. Смарт конструктор цілей
                   _buildDashboardCard(
                     context,
                     title: "Конструктор цілей",
                     subtitle: "SMART критерії",
                     icon: Icons.track_changes,
                     color: Colors.green.shade600,
-                    destination: const SmartGoalsScreen(), // ПІДКЛЮЧЕНО!
+                    destination: const EmbeddedSmartGoalsScreen(),
                   ),
 
                   // 4. Класифікатор МКХ-10
@@ -104,20 +102,20 @@ class MainDashboardScreen extends StatelessWidget {
                     subtitle: "Діагностичні коди",
                     icon: Icons.assignment_turned_in,
                     color: Colors.amber.shade700,
-                    destination: const IcdScreen(), // ПІДКЛЮЧЕНО!
+                    destination: const EmbeddedIcdScreen(),
                   ),
 
-                  // 5. Комплекси вправ (ЛФК)
+                  // 5. Вправи та ЛФК
                   _buildDashboardCard(
                     context,
                     title: "Вправи та ЛФК",
                     subtitle: "Протоколи занять",
                     icon: Icons.fitness_center,
                     color: Colors.purple.shade600,
-                    destination: null, // Додамо екран, як тільки створимо його файл
+                    destination: null,
                   ),
 
-                  // 6. Налаштування системи
+                  // 6. Налаштування
                   _buildDashboardCard(
                     context,
                     title: "Налаштування",
@@ -174,6 +172,153 @@ class MainDashboardScreen extends StatelessWidget {
               Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey.shade600, height: 1.2)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 2. ВБУДОВАНИЙ ЕКРАН КОНСТРУКТОРА ЦІЛЕЙ SMART
+// ==========================================
+class EmbeddedSmartGoalsScreen extends StatelessWidget {
+  const EmbeddedSmartGoalsScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Конструктор цілей SMART"),
+        backgroundColor: Colors.green.shade600,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Постановка цілей реабілітації",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView(
+                children: _buildSmartFields(),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              height: 45,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade600),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Ціль збережено в протокол пацієнта")),
+                  );
+                },
+                child: const Text("Зберегти ціль", style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSmartFields() {
+    final fields = [
+      {"t": "S - Специфічна (Specific)", "h": "Яку саме функцію відновлюємо?"},
+      {"t": "M - Вимірювана (Measurable)", "h": "В яких одиницях (градуси, метри, бали)?"},
+      {"t": "A - Досяжна (Achievable)", "h": "Реалістичність з огляду на травму"},
+      {"t": "R - Релевантна (Relevant)", "h": "Важливість для повсякденного життя пацієнта"},
+      {"t": "T - Обмежена в часі (Time-bound)", "h": "Термін виконання (напр. 2 тижні)"},
+    ];
+
+    return fields.map((f) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        decoration: InputDecoration(
+          labelText: f["t"],
+          hintText: f["h"],
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    )).toList();
+  }
+}
+
+// ==========================================
+// 3. ВБУДОВАНИЙ ЕКРАН КЛАСИФІКАТОРА МКХ-10
+// ==========================================
+class EmbeddedIcdScreen extends StatefulWidget {
+  const EmbeddedIcdScreen({Key? key}) : super(key: key);
+
+  @override
+  State<EmbeddedIcdScreen> createState() => _EmbeddedIcdScreenState();
+}
+
+class _EmbeddedIcdScreenState extends State<EmbeddedIcdScreen> {
+  final List<Map<String, String>> _icdCodes = [
+    {"code": "M50", "name": "Ураження міжхребцевих дисків шийного відділу"},
+    {"code": "G80", "name": "Церебральний параліч (ДЦП)"},
+    {"code": "I69", "name": "Наслідки цереброваскулярних хвороб (Інсульт)"},
+    {"code": "M16", "name": "Коксартроз (артроз кульшового суглоба)"},
+    {"code": "S42", "name": "Перелом плечової кістки / суглоба"},
+    {"code": "T90", "name": "Наслідки травм голови"},
+  ];
+
+  String _searchQuery = "";
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _icdCodes
+        .where((e) => e["code"]!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                      e["name"]!.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Класифікатор МКХ-10 / МКФ"),
+        backgroundColor: Colors.amber.shade700,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: "Пошук коду або діагнозу",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (val) => setState(() => _searchQuery = val),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filtered.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      leading: Chip(
+                        label: Text(filtered[index]["code"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        backgroundColor: Colors.amber.shade100,
+                      ),
+                      title: Text(filtered[index]["name"]!),
+                      trailing: const Icon(Icons.add_circle_outline, color: Colors.amber),
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Код ${filtered[index]["code"]} вибрано")),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
