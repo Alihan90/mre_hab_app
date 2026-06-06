@@ -4,7 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models.dart';
 import 'mkh10_screen.dart';
 import 'scales_catalog_screen.dart';
-import 'exercises_catalog_view.dart'; // Використовуємо наш новий адаптивний каталог
+import 'exercises_catalog_view.dart'; 
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -40,7 +40,8 @@ class _PatientsScreenState extends State<PatientsScreen> {
   void _addNewPatient() {
     showDialog(
       context: context,
-      builder: (context) {
+      barrierDismissible: false, // Користувач має натиснути кнопки для закриття
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -49,13 +50,25 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'ПІБ Пацієнта (українською)')),
-                    TextField(controller: _birthController, decoration: const InputDecoration(labelText: 'Дата народження (ДД.ММ.РРРР)')),
-                    TextField(controller: _admissionController, decoration: const InputDecoration(labelText: 'Дата початку реабілітації')),
+                    TextField(
+                      controller: _nameController, 
+                      decoration: const InputDecoration(labelText: 'ПІБ Пацієнта (українською)'),
+                    ),
+                    TextField(
+                      controller: _birthController, 
+                      decoration: const InputDecoration(labelText: 'Дата народження (ДД.ММ.РРРР)'),
+                    ),
+                    TextField(
+                      controller: _admissionController, 
+                      decoration: const InputDecoration(labelText: 'Дата початку реабілітації'),
+                    ),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(border: Border.all(color: Colors.purple.shade200), borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.purple.shade200), 
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -64,7 +77,10 @@ class _PatientsScreenState extends State<PatientsScreen> {
                           Text(_selectedDiagnosis, style: const TextStyle(fontSize: 13)),
                           const SizedBox(height: 6),
                           ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade400, foregroundColor: Colors.white),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.purple.shade400, 
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -89,17 +105,22 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Скасувати')),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  }, 
+                  child: const Text('Скасувати'),
+                ),
                 ElevatedButton(
                   onPressed: () {
-                    if (_nameController.text.isNotEmpty) {
+                    if (_nameController.text.trim().isNotEmpty) {
                       setState(() {
                         _patients.add(Patient(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
-                          name: _nameController.text,
-                          birthDate: _birthController.text,
+                          name: _nameController.text.trim(),
+                          birthDate: _birthController.text.trim(),
                           diagnosisMkh10: _selectedDiagnosis,
-                          admissionDate: _admissionController.text,
+                          admissionDate: _admissionController.text.trim(),
                           irp: IrpPlan(),
                         ));
                       });
@@ -107,7 +128,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                       _birthController.clear();
                       _admissionController.clear();
                       _selectedDiagnosis = 'Не вказано. Натисніть кнопку МКХ-10';
-                      Navigator.pop(context);
+                      Navigator.pop(dialogContext);
                     }
                   },
                   child: const Text('Зберегти'),
@@ -126,6 +147,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
       appBar: AppBar(
         title: const Text('Реєстр / Картки пацієнтів'),
         backgroundColor: Colors.blue.shade100,
+        leading: const BackButton(color: Colors.black), // Надійна системна кнопка назад
       ),
       body: ListView.builder(
         itemCount: _patients.length,
@@ -142,7 +164,12 @@ class _PatientsScreenState extends State<PatientsScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PatientCardDetailScreen(patient: patient, onUpdate: () => setState(() {}))),
+                  MaterialPageRoute(
+                    builder: (context) => PatientCardDetailScreen(
+                      patient: patient, 
+                      onUpdate: () => setState(() {}),
+                    ),
+                  ),
                 );
               },
             ),
@@ -159,7 +186,6 @@ class _PatientsScreenState extends State<PatientsScreen> {
     );
   }
 }
-
 class PatientCardDetailScreen extends StatefulWidget {
   final Patient patient;
   final VoidCallback onUpdate;
