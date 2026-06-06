@@ -398,7 +398,10 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           const Text('🎯 Постановка цілей SMART (МОЗ)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
                           IconButton(
                             icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) => irp.goalsSmart = val),
+                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) {
+                              setState(() => irp.goalsSmart = val);
+                              widget.onUpdate();
+                            }),
                           ),
                         ],
                       ),
@@ -414,7 +417,10 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo)),
                           IconButton(
                             icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) => irp.mfkCodes = val),
+                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) {
+                              setState(() => irp.mfkCodes = val);
+                              widget.onUpdate();
+                            }),
                           ),
                         ],
                       ),
@@ -430,9 +436,9 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
             ),
 
             // ==========================================
-           // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП (БЕЗПЕЧНИЙ)
+            // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП НА N ДНІВ
             // ==========================================
-Padding(
+            Padding(
               padding: const EdgeInsets.all(12.0),
               child: Card(
                 color: Colors.purple.shade50,
@@ -522,7 +528,7 @@ Padding(
             ),
 
             // ==========================================
-            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ
+            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ ЗА ШКАЛАМИ
             // ==========================================
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -532,17 +538,23 @@ Padding(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(child: Text('🗒️ Фіксація візитів:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+                      const Text('🗒️ Фіксація візитів пацієнта:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
                         onPressed: _createNewVisit,
                         icon: const Icon(Icons.add),
-                        label: const Text('Додати візит', style: TextStyle(fontSize: 12)),
+                        label: const Text('Додати новий візит'),
                       )
                     ],
                   ),
+                  const SizedBox(height: 10),
                   if (widget.patient.visits == null || widget.patient.visits.isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0), 
+                        child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey)),
+                      ),
+                    )
                   else
                     ListView.builder(
                       shrinkWrap: true,
@@ -551,21 +563,18 @@ Padding(
                       itemBuilder: (context, vIndex) {
                         final visit = widget.patient.visits[vIndex];
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                           color: Colors.grey.shade50,
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Візит від ${visit.date.day.toString().padLeft(2, '0')}.${visit.date.month.toString().padLeft(2, '0')}.${visit.date.year}', 
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
-                                ),
+                                Text('Візит від ${visit.date.day}.${visit.date.month}.${visit.date.year}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
                                 const SizedBox(height: 6),
                                 TextFormField(
                                   initialValue: visit.therapeuticNote,
-                                  decoration: const InputDecoration(labelText: 'Щоденник візиту', border: OutlineInputBorder()),
+                                  decoration: const InputDecoration(labelText: 'Статус / Текстовий щоденник візиту', border: OutlineInputBorder()),
                                   maxLines: null,
                                   onChanged: (text) {
                                     visit.therapeuticNote = text;
@@ -574,7 +583,7 @@ Padding(
                                 ),
                                 const SizedBox(height: 8),
                                 if (visit.testResults != null && visit.testResults.isNotEmpty) ...[
-                                  const Text('Проведені тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                  const Text('Проведені в цей день тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                                   ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
                                   const SizedBox(height: 8),
                                 ],
@@ -591,9 +600,9 @@ Padding(
                                               onScaleTested: (scaleName, result) {
                                                 setState(() {
                                                   visit.testResults[scaleName] = result;
-                                                  final regExp = RegExp(r'\d+');
-                                                  final match = regExp.firstMatch(result);
-                                                  final scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
+                                                  RegExp regExp = RegExp(r'\d+');
+                                                  var match = regExp.firstMatch(result);
+                                                  double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
                                                   
                                                   widget.patient.scaleHistory.add(ScaleHistoryPoint(
                                                     date: DateTime.now(),
@@ -613,7 +622,7 @@ Padding(
                                       }
                                     },
                                     icon: const Icon(Icons.analytics, size: 16),
-                                    label: const Text('Запустити клінічне тестування шкал', style: TextStyle(fontSize: 11)),
+                                    label: const Text('Запустити клінічне тестування шкал'),
                                   ),
                                 ),
                               ],
@@ -625,257 +634,6 @@ Padding(
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-}
-            // ==========================================
-            // БЛОК 3. SMART ЦІЛІ ТА МКФ (З МОЖЛИВІСТЮ РУЧНОГО КОРЕГУВАННЯ)
-            // ==========================================
-           Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('🎯 Постановка цілей SMART (МОЗ)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) => irp.goalsSmart = val),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        irp.goalsSmart.isEmpty ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart, 
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      const Divider(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo)),
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) => irp.mfkCodes = val),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        irp.mfkCodes.isEmpty ? 'Натисніть олівець, щоб додати коди МКФ...' : irp.mfkCodes, 
-                        style: const TextStyle(fontSize: 12, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // ==========================================
-            // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП НА N ДНІВ
-            // ==========================================
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Card(
-                color: Colors.purple.shade50,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('🗓️ Планувальник ІРП за днями', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.purple)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text('Тривалість плану: ', style: TextStyle(fontSize: 13)),
-                          DropdownButton<int>(
-                            value: irp.plannedDays ?? 3, // Безпечний дефолт
-                            dropdownColor: Colors.purple.shade50,
-                            items: [3, 5, 7, 10, 14].map((int value) {
-                              return DropdownMenuItem<int>(
-                                value: value, 
-                                child: Text('$value днів'),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  irp.plannedDays = val;
-                                });
-                                widget.onUpdate();
-                              }
-                            },
-                          ),
-                          const Spacer(),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
-                            onPressed: () {
-                              // Безпечний виклик генерації із захистом від падіння екрану
-                              try {
-                                _generateSmartIrpSchedule();
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Помилка генерації баз вправ: $e')),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.auto_awesome, size: 16),
-                            label: const Text('Згенерувати вправи', style: TextStyle(fontSize: 11)),
-                          )
-                        ],
-                      ),
-                      
-                      // Відображення сітки розбитих по днях вправ
-                      if (irp.daysSchedule != null && irp.daysSchedule.isNotEmpty)
-                        ...irp.daysSchedule.entries.map((dayEntry) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: ExpansionTile(
-                              iconColor: Colors.purple,
-                              title: Text('День ${dayEntry.key} — Комплекс втручань', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.purple)),
-                              children: dayEntry.value.map<Widget>((customEx) {
-                                return ListTile(
-                                  dense: true,
-                                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-                                  title: Text(customEx.title ?? 'Вправа', style: const TextStyle(fontWeight: FontWeight.w500)),
-                                  subtitle: Text('Дозування: ${customEx.dosage ?? ''}'),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.edit_road, size: 18, color: Colors.grey),
-                                    tooltip: 'Змінити дозування вручну',
-                                    onPressed: () => _editTextField('Дозування вправи', customEx.dosage ?? '', (val) {
-                                      setState(() {
-                                        customEx.dosage = val;
-                                        customEx.isCustomized = true;
-                                      });
-                                      widget.onUpdate();
-                                    }),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          );
-                        }).toList()
-                      else
-                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Text('План порожній. Оберіть кількість днів та натисніть "Згенерувати вправи".', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // ==========================================
-            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ ЗА ШКАЛАМИ
-            // ==========================================
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('🗒️ Фіксація візитів пацієнта:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
-                    onPressed: _createNewVisit,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Додати новий візит'),
-                  )
-                ],
-              ),
-            ),
-
-            if (widget.patient.visits == null || widget.patient.visits.isEmpty)
-  Center(
-    child: Padding(
-      padding: const EdgeInsets.all(20.0), 
-      child: const Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey)),
-    ),
-  )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: patient.visits.length,
-                itemBuilder: (context, vIndex) {
-                  final visit = patient.visits[vIndex];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    color: Colors.grey.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Візит від ${visit.date.day}.${visit.date.month}.${visit.date.year}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            initialValue: visit.therapeuticNote,
-                            decoration: const InputDecoration(labelText: 'Статус / Текстовий щоденник візиту', border: OutlineInputBorder()),
-                            maxLines: null,
-                            onChanged: (text) {
-                              visit.therapeuticNote = text;
-                              widget.onUpdate();
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          
-                          if (visit.testResults.isNotEmpty) ...[
-                            const Text('Проведені в цей день тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                            ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
-                            const SizedBox(height: 8),
-                          ],
-
-                          // Кнопка проведення тестування, яка автоматично пише дані в графік
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade600, foregroundColor: Colors.white),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ScalesCatalogScreen(
-                                      onScaleTested: (scaleName, result) {
-                                        setState(() {
-                                          visit.testResults[scaleName] = result;
-                                          
-                                          // Намагаємося витягнути перше числове значення з результату тесту для графіка динаміки
-                                          RegExp regExp = RegExp(r'\d+');
-                                          var match = regExp.firstMatch(result);
-                                          double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
-                                          
-                                          widget.patient.scaleHistory.add(
-                                            date: DateTime.now(),
-                                            scaleName: scaleName,
-                                            score: scoreValue,
-                                          ));
-                                        });
-                                        widget.onUpdate();
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.analytics, size: 16),
-                              label: const Text('Запустити клінічне тестування шкал'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
             const SizedBox(height: 40),
           ],
         ),
