@@ -1,5 +1,5 @@
 // lib/main.dart
-import 'package:amre_hab_app/screens/exercises_catalog_view.dart';
+import 'package:mre_hab_app/screens/exercises_catalog_view.dart';
 import 'package:flutter/material.dart';
 import 'screens/patients_screen.dart';
 import 'screens/scales_catalog_screen.dart';
