@@ -137,8 +137,9 @@ class Exercise {
   final String title;
   final String category;
   final String description;
+  final String indications; // ДОДАНО ПОЛЕ ДЛЯ ПОКАЗАНЬ
   final String dosage;
-  final List<String> executionSteps; // ДОДАНО ПОЛЕ ДЛЯ ПОКРОКОВИХ ІНСТРУКЦІЙ
+  final List<String> executionSteps;
   final List<String> contraindications;
   final ExerciseAgeGroup ageGroup;
   final ExerciseIntensity intensity;
@@ -148,8 +149,9 @@ class Exercise {
     required this.title,
     required this.category,
     required this.description,
+    required this.indications, // ДОДАНО В КОНСТРУКТОР
     required this.dosage,
-    required this.executionSteps, // ДОДАНО В КОНСТРУКТОР
+    required this.executionSteps,
     required this.contraindications,
     required this.ageGroup,
     required this.intensity,
