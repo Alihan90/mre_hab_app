@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'models.dart';
@@ -6,6 +7,7 @@ import 'screens/goniometer_screen.dart';
 import 'screens/exercises_screen.dart';
 import 'screens/mkh10_screen.dart';
 import 'screens/irp_global_screen.dart';
+import 'screens/goniometry_test_screen.dart'; // НАШ НОВИЙ ІМПОРТ
 
 void main() {
   runApp(const RehabilitationApp());
@@ -132,7 +134,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
+                childAspectRatio: 1.05, // Трішки збільшив коефіцієнт для кращого падіння тексту
                 children: [
                   _buildMenuCard(
                     context,
@@ -158,14 +160,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     color: Colors.green.shade600,
                     destination: const ExercisesScreen(),
                   ),
+                  
+                  // ОНОВЛЕНИЙ ПУНКТ ГОНІОМЕТРІЇ: ТЕПЕР ВІДКРИВАЄ НАШ ІНТЕРАКТИВНИЙ ТЕСТ З ДОВІДНИКОМ
                   _buildMenuCard(
                     context,
-                    title: "Гоніометрія (ROM)",
-                    subtitle: "Вимірювач та анатомічний довідник",
-                    icon: Icons.screen_rotation,
+                    title: "Тест Гоніометрії (ROM)",
+                    subtitle: "Вимірювання суглобів, норми та збереження в карту",
+                    icon: Icons.straighten,
                     color: Colors.orange.shade700,
-                    destination: const GoniometerScreen(),
+                    destination: const GoniometryInteractiveTestScreen(),
                   ),
+                  
                   _buildMenuCard(
                     context,
                     title: "Довідник МКХ-10",
@@ -239,6 +244,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   }
 }
 
+// Старий клас ClinicalScale залишаємо без змін для сумісності
 class ClinicalScale {
   final String id;
   final String name;
@@ -289,7 +295,7 @@ class ClinicalScalesData {
       id: "6mwt",
       name: "6-Minute Walk Test (6MWT)",
       purpose: """Оцінка аеробної спроможності, витривалості серцево-судинної та дихальної систем.""",
-      method: """Пацієнту пропонується пройти якомога більшу відстань у комфортному темпі за 6 хвилин. Дозволені зупинки. Фіксується загальний метраж, ЧСС та рівень задишки.""",
+      method: """Пацієнту пропонується пройти якомога більшу відстань у комфортному темпі за 6 хвилин. Дозволені зупинки. Фіксується загальний метраж, ЧСС та уровень задишки.""",
     ),
     ClinicalScale(
       id: "tug",
