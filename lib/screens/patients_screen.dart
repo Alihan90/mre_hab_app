@@ -546,15 +546,15 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     ],
                   ),
                   
-                  if (patient.visits == null || patient.visits.isEmpty)
+                  if (widget.patient.visits == null || widget.patient.visits.isEmpty)
                     const Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('Журнал візитів порожній.', style: TextStyle(color: Colors.grey))))
                   else
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: patient.visits.length,
+                      itemCount: widget.patient.visits.length,
                       itemBuilder: (context, vIndex) {
-                        final visit = patient.visits[vIndex];
+                        final visit = widget.patient.visits[vIndex];
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           color: Colors.grey.shade50,
@@ -600,7 +600,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                                   var match = regExp.firstMatch(result);
                                                   double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
                                                   
-                                                  patient.scaleHistory.add(ScaleHistoryPoint(
+                                                  widget.patient.scaleHistory.add(ScaleHistoryPoint(
                                                     date: DateTime.now(),
                                                     scaleName: scaleName,
                                                     score: scoreValue,
