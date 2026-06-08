@@ -2,7 +2,7 @@ class IrpPlan {
   String goalsSmart;
   String mfkCodes;
   String interventionPlan;
-  String specialistName;
+  String specialistName; // Це те саме, що specialName, на яке сварився PatientsScreen
   String rehabilitationCycle;
   int? plannedDays;
   Map<int, List<CustomExercise>>? daysSchedule;
@@ -19,10 +19,10 @@ class IrpPlan {
 }
 
 class CustomExercise {
-  final String id;
-  final String title;
-  final String dosage;
-  bool isCustomized; // Додано
+  String id;
+  String title;
+  String dosage; // Тепер це змінна, а не final, щоб можна було робити setter
+  bool isCustomized;
 
   CustomExercise({
     required this.id,
@@ -33,8 +33,8 @@ class CustomExercise {
 }
 
 class PatientVisit {
-  final String id;
-  DateTime date;
+  String id;
+  String date; // Змінили назад на String, щоб збігалося з patients_screen
   String therapeuticNote;
   Map<String, String>? testResults;
 
@@ -43,18 +43,6 @@ class PatientVisit {
     required this.date,
     this.therapeuticNote = '',
     this.testResults,
-  });
-}
-
-class ScaleHistoryPoint {
-  final String date;
-  final String scaleName;
-  final String score;
-
-  ScaleHistoryPoint({
-    required this.date,
-    required this.scaleName,
-    required this.score,
   });
 }
 
@@ -74,62 +62,27 @@ class Patient {
     required this.id,
     required this.name,
     required this.age,
-    required this.birthDate,
-    required this.diagnosis,
-    required this.diagnosisMkh10,
-    required this.admissionDate,
+    this.birthDate = '',
+    this.diagnosis = '',
+    this.diagnosisMkh10 = '',
+    this.admissionDate = '',
     required this.irp,
     List<PatientVisit>? visits,
     List<ScaleHistoryPoint>? scaleHistory,
   })  : visits = visits ?? [],
         scaleHistory = scaleHistory ?? [];
 
-  // Додаємо метод, який вимагає patients_screen.dart
-  String generateMoxStatement() {
-    return "ІРП для $name (Діагноз: $diagnosisMkh10)";
-  }
+  String generateMoxStatement() => "ІРП для $name";
 }
 
-// Моделі для Каталогу та Гоніометрії
-enum ExerciseAgeGroup { all, adult, child, geriatric }
-enum ExerciseIntensity { low, medium, high }
+class ScaleHistoryPoint {
+  final String date;
+  final String scaleName;
+  final String score;
 
-class Exercise {
-  final String id;
-  final String title;
-  final String category;
-  final String description;
-  final String indications;
-  final String contraindications;
-  final String dosage;
-  final List<String> executionSteps;
-  final ExerciseAgeGroup ageGroup;
-  final ExerciseIntensity intensity;
-
-  Exercise({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.description,
-    required this.indications,
-    required this.contraindications,
-    required this.dosage,
-    required this.executionSteps,
-    required this.ageGroup,
-    required this.intensity,
-  });
-}
-
-class JointMovementNorm {
-  final String jointName;
-  final String movementType;
-  final int normalValue;
-  final String instruction;
-
-  JointMovementNorm({
-    required this.jointName,
-    required this.movementType,
-    required this.normalValue,
-    required this.instruction,
+  ScaleHistoryPoint({
+    required this.date,
+    required this.scaleName,
+    required this.score,
   });
 }
