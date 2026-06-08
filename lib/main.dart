@@ -2,13 +2,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-// Заглушки екранів (замініть на власні імпорти, коли створите окремі файли)
-class PatientsScreen extends StatelessWidget {
-  const PatientsScreen({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Пацієнти")));
+// ==========================================
+// СТРУКТУРА ДАНИХ ДЛЯ МЕДИЧНОЇ КАРТИ ПАЦІЄНТА
+// ==========================================
+class PatientCard {
+  final String id;
+  final String fullName;
+  final String birthDate;
+  final String primaryDiagnosis;
+  List<String> smartGoals; // База для Кроку 3 (Конструктор SMART)
+  List<String> icdCodes;   // База для Кроку 4 (Довідник МКХ-10)
+
+  PatientCard({
+    required this.id,
+    required this.fullName,
+    required this.birthDate,
+    required this.primaryDiagnosis,
+    this.smartGoals = const [],
+    this.icdCodes = const [],
+  });
 }
 
+// ==========================================
+// ЗАГЛУШКИ ДЛЯ ІНШИХ МОДУЛІВ (БУДУТЬ НАПОВНЮВАТИСЬ ДАЛІ)
+// ==========================================
 class ScalesCatalogScreen extends StatelessWidget {
   const ScalesCatalogScreen({Key? key}) : super(key: key);
   @override
@@ -21,6 +38,7 @@ class ExercisesCatalogView extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Вправи та ЛФК")));
 }
 
+// Головна точка входу
 void main() {
   runApp(const RehabilitationApp());
 }
@@ -55,8 +73,33 @@ class RehabilitationApp extends StatelessWidget {
 // ==========================================
 // 1. ГОЛОВНИЙ ЕКРАН — РОБОЧИЙ СТІЛ (6 ПЛИТОК)
 // ==========================================
-class MainDashboardScreen extends StatelessWidget {
+class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainDashboardScreen> createState() => _MainDashboardScreenState();
+}
+
+class _MainDashboardScreenState extends State<MainDashboardScreen> {
+  // Централізована база даних пацієнтів у пам'яті (State)
+  final List<PatientCard> _globalPatients = [
+    PatientCard(
+      id: "1",
+      fullName: "Іваненко Петро Миколайович",
+      birthDate: "15.05.1978",
+      primaryDiagnosis: "Наслідки ішемічного інсульту, лівобічний геміпарез",
+      smartGoals: ["Збільшити кут згинання у ліктьовому суглобі до 90° за 3 тижні"],
+      icdCodes: ["I69.3"],
+    ),
+    PatientCard(
+      id: "2",
+      fullName: "Сидоренко Ольга Володимирівна",
+      birthDate: "22.11.1990",
+      primaryDiagnosis: "Компресійний перелом L1 хребця, стан після металоостеосинтезу",
+      smartGoals: ["Ходьба без опори на відстань до 100м без болю за 14 днів"],
+      icdCodes: ["S32.0"],
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +136,10 @@ class MainDashboardScreen extends StatelessWidget {
                     subtitle: "База та Журнал карт",
                     icon: Icons.people,
                     color: Colors.blue.shade600,
-                    destination: const PatientsScreen(),
+                    destination: PatientsScreen(
+                      patients: _globalPatients,
+                      onPatientsUpdated: () => setState(() {}),
+                    ),
                   ),
                   _buildDashboardCard(
                     context,
@@ -109,7 +155,7 @@ class MainDashboardScreen extends StatelessWidget {
                     subtitle: "SMART критерії",
                     icon: Icons.track_changes,
                     color: Colors.green.shade600,
-                    destination: EmbeddedSmartGoalsScreen(), // const ВИДАЛЕНО НАЗАВЖДИ
+                    destination: const EmbeddedSmartGoalsScreen(),
                   ),
                   _buildDashboardCard(
                     context,
@@ -117,7 +163,7 @@ class MainDashboardScreen extends StatelessWidget {
                     subtitle: "Діагностичні коди",
                     icon: Icons.assignment_turned_in,
                     color: Colors.amber.shade700,
-                    destination: EmbeddedIcdScreen(), // const ВИДАЛЕНО НАЗАВЖДИ
+                    destination: const EmbeddedIcdScreen(),
                   ),
                   _buildDashboardCard(
                     context,
@@ -160,9 +206,8 @@ class MainDashboardScreen extends StatelessWidget {
           if (destination != null) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => destination));
           } else {
-            // Спрощено рядок, щоб уникнути помилок копіювання на GitHub
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Модуль налаштовується")),
+              const SnackBar(content: Text("Модуль налаштовується")),
             );
           }
         },
@@ -185,6 +230,217 @@ class MainDashboardScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 🛠️ РЕАЛІЗАЦІЯ КРОКУ 1: ЕКРАН БАЗИ ПАЦІЄНТІВ
+// ==========================================
+class PatientsScreen extends StatefulWidget {
+  final List<PatientCard> patients;
+  final VoidCallback onPatientsUpdated;
+
+  const PatientsScreen({
+    Key? key,
+    required this.patients,
+    required this.onPatientsUpdated,
+  }) : super(key: key);
+
+  @override
+  State<PatientsScreen> createState() => _PatientsScreenState();
+}
+
+class _PatientsScreenState extends State<PatientsScreen> {
+  String _searchQuery = "";
+
+  void _showAddPatientDialog() {
+    final nameController = TextEditingController();
+    final dateController = TextEditingController();
+    final diagnosisController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Нова карта пацієнта", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "ПІБ Пацієнта", border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: dateController,
+                decoration: const InputDecoration(labelText: "Дата народження (ДД.ММ.РРРР)", border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: diagnosisController,
+                maxLines: 2,
+                decoration: const InputDecoration(labelText: "Первинний діагноз", border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Скасувати")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade700),
+            onPressed: () {
+              if (nameController.text.isNotEmpty) {
+                setState(() {
+                  widget.patients.add(PatientCard(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    fullName: nameController.text,
+                    birthDate: dateController.text.isEmpty ? "Не вказано" : dateController.text,
+                    primaryDiagnosis: diagnosisController.text.isEmpty ? "Діагноз відсутній" : diagnosisController.text,
+                    smartGoals: [],
+                    icdCodes: [],
+                  ));
+                });
+                widget.onPatientsUpdated();
+                Navigator.pop(context);
+              }
+            },
+            child: const Text("Створити карту", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openPatientJournal(PatientCard patient) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text("Медична карта пацієнта"),
+            backgroundColor: Colors.blue.shade700,
+            foregroundColor: Colors.white,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                Card(
+                  color: Colors.blue.shade50,
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(patient.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 5),
+                        Text("Дата народження: ${patient.birthDate}", style: const TextStyle(fontSize: 14)),
+                        const Divider(),
+                        const Text("Клінічний діагноз:", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(patient.primaryDiagnosis, style: TextStyle(color: Colors.grey.shade800)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                const Text("📌 Реабілітаційні цілі (SMART)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.smartGoals.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Цілі ще не встановлено. Скористайтеся Конструктором SMART на робочому столі."),
+                      )
+                    : Column(
+                        children: patient.smartGoals.map((goal) => Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.track_changes, color: Colors.green),
+                            title: Text(goal),
+                          ),
+                        )).toList(),
+                      ),
+                const SizedBox(height: 20),
+                const Text("🗂️ Зареєстровані коди МКХ-10", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.icdCodes.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Коди не додано. Використовуйте довідник МКХ на робочому столі."),
+                      )
+                    : Wrap(
+                        spacing: 8,
+                        children: patient.icdCodes.map((code) => Chip(
+                          label: Text(code, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          backgroundColor: Colors.amber.shade100,
+                          avatar: const Icon(Icons.label, size: 16, color: Colors.amber),
+                        )).toList(),
+                      ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredPatients = widget.patients
+        .where((p) => p.fullName.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Реєстр пацієнтів"),
+        backgroundColor: Colors.blue.shade700,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: "Пошук пацієнта за ПІБ",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (val) => setState(() => _searchQuery = val),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: filteredPatients.isEmpty
+                  ? const Center(child: Text("Пацієнтів не знайдено"))
+                  : ListView.builder(
+                      itemCount: filteredPatients.length,
+                      itemBuilder: (context, index) {
+                        final patient = filteredPatients[index];
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade100,
+                              child: Icon(Icons.person, color: Colors.blue.shade700),
+                            ),
+                            title: Text(patient.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text("Діагноз: ${patient.primaryDiagnosis}", maxLines: 1, overflow: TextOverflow.ellipsis),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                            onTap: () => _openPatientJournal(patient),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddPatientDialog,
+        backgroundColor: Colors.blue.shade700,
+        child: const Icon(Icons.person_add, color: Colors.white),
       ),
     );
   }
