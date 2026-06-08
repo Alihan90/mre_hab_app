@@ -267,7 +267,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
     setState(() {
       widget.patient.visits.add(PatientVisit(
         id: now.millisecondsSinceEpoch.toString(),
-        date: now,
+        date: now.toString(),
         therapeuticNote: '[$timeString] Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
         testResults: {}, // Ініціалізуємо порожню карту результатів
       ));
