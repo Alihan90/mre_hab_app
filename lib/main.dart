@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Імпортуємо всі наші нові модулі
+// Імпортуємо моделі
 import 'models.dart';
-import 'patients_screen.dart';
-import 'scales_screen.dart';
-import 'goals_screen.dart';
-import 'icd_screen.dart';
-import 'exercises_screen.dart';
+
+// Імпортуємо ТВОЇ файли з підпапки screen
+import 'screen/patients_screen.dart';
+import 'screen/scales_catalog_screen.dart';
+import 'screen/exercises_catalog_view.dart';
+import 'screen/mkh10_screen.dart';
+import 'screen/irp_global_screen.dart'; 
 
 void main() {
   runApp(const RehabCompanionApp());
@@ -50,7 +52,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _loadPatientsData();
   }
 
-  // Завантаження списку пацієнтів із локальної пам'яті при старті додатка
+  // Завантаження пацієнтів із пам'яті при старті
   Future<void> _loadPatientsData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -68,7 +70,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  // Збереження поточного стану списку пацієнтів у пам'ять телефону
+  // Збереження списку пацієнтів
   Future<void> _savePatientsData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -91,23 +93,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Список екранів, куди ми прокидаємо список пацієнтів та функції збереження
+    // Екрани з твоєї папки screen/
     final List<Widget> _screens = [
       PatientsRegistryScreen(
         patients: _patients,
         onPatientAdded: _addPatient,
         onPatientDeleted: _deletePatient,
       ),
-      const ScalesCatalogScreen(),
-      EmbeddedSmartGoalsScreen(
+      const ScalesCatalogScreen(), // Твій каталог шкал
+      IrpGlobalScreen( // Твій конструктор цілей (ІРП)
         patients: _patients,
         onGoalSaved: _savePatientsData,
       ),
-      EmbeddedIcdScreen(
+      Mkh10Screen( // Твій екран МКХ-10
         patients: _patients,
         onIcdAssigned: _savePatientsData,
       ),
-      ExercisesCatalogView(
+      ExercisesCatalogView( // Твій каталог ЛФК
         patients: _patients,
         onExercisesUpdated: _savePatientsData,
       ),
@@ -128,7 +130,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.folder_shared), label: 'Реєстр'),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Шкали'),
-          BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'SMART'),
+          BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'ІРП (SMART)'),
           BottomNavigationBarItem(icon: Icon(Icons.healing), label: 'МКХ-10'),
           BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'ЛФК'),
         ],
