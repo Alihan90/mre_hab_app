@@ -7,7 +7,9 @@ import 'scales_catalog_screen.dart';
 import 'exercises_catalog_view.dart'; 
 
 class PatientsScreen extends StatefulWidget {
-  const PatientsScreen({super.key});
+  const PatientsScreen({super.key, required this.patients, required this.onUpdate});
+final List<Patient> patients;
+final VoidCallback onUpdate;
 
   @override
   State<PatientsScreen> createState() => _PatientsScreenState();
