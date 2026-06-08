@@ -1,8 +1,9 @@
+// lib/models.dart
 class IrpPlan {
   String goalsSmart;
   String mfkCodes;
   String interventionPlan;
-  String specialistName; // Це те саме, що specialName, на яке сварився PatientsScreen
+  String specialistName;
   String rehabilitationCycle;
   int? plannedDays;
   Map<int, List<CustomExercise>>? daysSchedule;
@@ -21,7 +22,7 @@ class IrpPlan {
 class CustomExercise {
   String id;
   String title;
-  String dosage; // Тепер це змінна, а не final, щоб можна було робити setter
+  String dosage;
   bool isCustomized;
 
   CustomExercise({
@@ -34,7 +35,7 @@ class CustomExercise {
 
 class PatientVisit {
   String id;
-  String date; // Змінили назад на String, щоб збігалося з patients_screen
+  String date;
   String therapeuticNote;
   Map<String, String>? testResults;
 
@@ -43,6 +44,18 @@ class PatientVisit {
     required this.date,
     this.therapeuticNote = '',
     this.testResults,
+  });
+}
+
+class ScaleHistoryPoint {
+  String date;
+  String scaleName;
+  String score;
+
+  ScaleHistoryPoint({
+    required this.date,
+    required this.scaleName,
+    required this.score,
   });
 }
 
@@ -75,14 +88,45 @@ class Patient {
   String generateMoxStatement() => "ІРП для $name";
 }
 
-class ScaleHistoryPoint {
-  final String date;
-  final String scaleName;
-  final String score;
+enum ExerciseAgeGroup { all, adult, child, geriatric }
+enum ExerciseIntensity { low, medium, high }
 
-  ScaleHistoryPoint({
-    required this.date,
-    required this.scaleName,
-    required this.score,
+class Exercise {
+  final String id;
+  final String title;
+  final String category;
+  final String description;
+  final String indications;
+  final String contraindications;
+  final String dosage;
+  final List<String> executionSteps;
+  final ExerciseAgeGroup ageGroup;
+  final ExerciseIntensity intensity;
+
+  Exercise({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.description,
+    required this.indications,
+    required this.contraindications,
+    required this.dosage,
+    required this.executionSteps,
+    required this.ageGroup,
+    required this.intensity,
+  });
+}
+
+class JointMovementNorm {
+  final String jointName;
+  final String movementType;
+  final int normalValue;
+  final String instruction;
+
+  JointMovementNorm({
+    required this.jointName,
+    required this.movementType,
+    required this.normalValue,
+    required this.instruction,
   });
 }
