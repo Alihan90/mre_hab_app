@@ -21,12 +21,14 @@ class _PatientsScreenState extends State<PatientsScreen> {
       birthDate: '14.05.1974',
       diagnosisMkh10: '[I63] Інфаркт мозку (Ішемічний інсульт)',
       admissionDate: '20.05.2026',
+      visits: [],
+      scaleHistory: [],
       irp: IrpPlan(
         goalsSmart: 'Збільшити силу в паретичній правій нозі до 4 балів за MRC та самостійно проходити 50 метрів без опори до 15.07.2026.',
         mfkCodes: 'b730.2 (Помірне порушення сили м\'язів однієї половини тіла), d450.1 (Легке ускладнення ходьби).',
         rehabilitationCycle: 'Первинний',
         interventionPlan: 'Кінезіотерапія за методикою PNF, ортостатичні тренування, відновлення дрібної моторики кисті.',
-        specialistName: 'Ковальчук О.В.',
+        specialName: 'Ковальчук О.В.',
         plannedDays: 3,
       ),
     ),
@@ -40,7 +42,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
   void _addNewPatient() {
     showDialog(
       context: context,
-      barrierDismissible: false, // Користувач має натиснути кнопки для закриття
+      barrierDismissible: false, 
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
@@ -121,7 +123,14 @@ class _PatientsScreenState extends State<PatientsScreen> {
                           birthDate: _birthController.text.trim(),
                           diagnosisMkh10: _selectedDiagnosis,
                           admissionDate: _admissionController.text.trim(),
-                          irp: IrpPlan(),
+                          visits: [], // Безпечна ініціалізація порожнього списку
+                          scaleHistory: [], // Безпечна ініціалізація порожнього списку
+                          irp: IrpPlan(
+                            goalsSmart: '',
+                            mfkCodes: '',
+                            plannedDays: 3,
+                            daysSchedule: {},
+                          ),
                         ));
                       });
                       _nameController.clear();
@@ -147,19 +156,20 @@ class _PatientsScreenState extends State<PatientsScreen> {
       appBar: AppBar(
         title: const Text('Реєстр / Картки пацієнтів'),
         backgroundColor: Colors.blue.shade100,
-        leading: const BackButton(color: Colors.black), // Надійна системна кнопка назад
+        leading: const BackButton(color: Colors.black), 
       ),
       body: ListView.builder(
         itemCount: _patients.length,
         itemBuilder: (context, index) {
           final patient = _patients[index];
+          final visitsCount = patient.visits.length;
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             elevation: 3,
             child: ListTile(
               leading: const Icon(Icons.assignment_ind, size: 40, color: Colors.blue),
               title: Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Діагноз: ${patient.diagnosisMkh10}\nПлановий ІРП: ${patient.irp.plannedDays} днів | Візитів: ${patient.visits.length}'),
+              subtitle: Text('Діагноз: ${patient.diagnosisMkh10}\nПлановий ІРП: ${patient.irp.plannedDays ?? 3} днів | Візитів: $visitsCount'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 18),
               onTap: () {
                 Navigator.push(
@@ -186,6 +196,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
     );
   }
 }
+
 class PatientCardDetailScreen extends StatefulWidget {
   final Patient patient;
   final VoidCallback onUpdate;
@@ -198,10 +209,10 @@ class PatientCardDetailScreen extends StatefulWidget {
 
 class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
   
-  // Автоматичний клінічний підбір некопіювальних вправ на N днів за діагнозом
   void _generateSmartIrpSchedule() {
     final irp = widget.patient.irp;
-    irp.daysSchedule.clear();
+    irp.daysSchedule ??= {};
+    irp.daysSchedule!.clear();
 
     List<String> matchingKeys = [];
     String diag = widget.patient.diagnosisMkh10.toLowerCase();
@@ -216,7 +227,8 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
       matchingKeys = ["RESP_01", "RESP_02", "GER_02"]; 
     }
 
-    for (int day = 1; day <= irp.plannedDays; day++) {
+    int days = irp.plannedDays ?? 3;
+    for (int day = 1; day <= days; day++) {
       List<CustomExercise> dayExercises = [];
       
       if (day % 2 != 0) {
@@ -237,17 +249,16 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
         if (extra != null) dayExercises.add(CustomExercise(id: extra.id, title: extra.title, dosage: extra.dosage));
       }
 
-      irp.daysSchedule[day] = dayExercises;
+      irp.daysSchedule![day] = dayExercises;
     }
 
     setState(() {});
     widget.onUpdate();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Згенеровано інтелектуальний графік на ${irp.plannedDays} днів за кодами МКХ-10!')),
+      SnackBar(content: Text('Згенеровано інтелектуальний графік на $days днів за кодами МКХ-10!')),
     );
   }
 
-  // Фіксація візиту з точним часом
   void _createNewVisit() {
     final now = DateTime.now();
     final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
@@ -256,12 +267,12 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
         id: now.millisecondsSinceEpoch.toString(),
         date: now,
         therapeuticNote: '[$timeString] Проведено тренування за індивідуальним планом на сьогодні. Скарги відсутні.',
+        testResults: {}, // Ініціалізуємо порожню карту результатів
       ));
     });
     widget.onUpdate();
   }
 
-  // Вікно для ручного редагування будь-якого текстового поля в ІРП або SMART
   void _editTextField(String title, String currentValue, Function(String) onSave) {
     final controller = TextEditingController(text: currentValue);
     showDialog(
@@ -306,9 +317,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==========================================
-            // БЛОК 1. КЛІНІЧНИЙ ПАСПОРТ ТА МКХ-10
-            // ==========================================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -338,9 +346,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
-            // ==========================================
-            // БЛОК 2. ДИНАМІЧНИЙ ГРАФІК СТАНУ ПАЦІЄНТА
-            // ==========================================
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Card(
@@ -352,7 +357,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     children: [
                       const Text('📈 Клінічна динаміка стану (Шкали)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       const SizedBox(height: 6),
-                      if (patient.scaleHistory == null || patient.scaleHistory.isEmpty)
+                      if (patient.scaleHistory.isEmpty)
                         const Text('Немає збережених точок тестування для графіка динаміки.', style: TextStyle(fontSize: 11, color: Colors.grey))
                       else ...[
                         Text('Остання оцінка: ${patient.scaleHistory.last.scaleName} -> ${patient.scaleHistory.last.score} балів', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
@@ -380,9 +385,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
-            // ==========================================
-            // БЛОК 3. SMART ЦІЛІ ТА МКФ (ВИПРАВЛЕНИЙ МАКЕТ)
-            // ==========================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Card(
@@ -398,7 +400,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           const Text('🎯 Постановка цілей SMART (МОЗ)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
                           IconButton(
                             icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart, (val) {
+                            onPressed: () => _editTextField('Ціль SMART', irp.goalsSmart ?? '', (val) {
                               setState(() => irp.goalsSmart = val);
                               widget.onUpdate();
                             }),
@@ -407,7 +409,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        irp.goalsSmart.isEmpty ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart, 
+                        (irp.goalsSmart == null || irp.goalsSmart!.isEmpty) ? 'Натисніть олівець, щоб сформулювати ціль...' : irp.goalsSmart!, 
                         style: const TextStyle(fontSize: 13),
                       ),
                       const Divider(height: 20),
@@ -417,7 +419,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           const Text('🧬 Коди МКФ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo)),
                           IconButton(
                             icon: const Icon(Icons.edit, size: 20, color: Colors.indigo), 
-                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes, (val) {
+                            onPressed: () => _editTextField('МКФ коди', irp.mfkCodes ?? '', (val) {
                               setState(() => irp.mfkCodes = val);
                               widget.onUpdate();
                             }),
@@ -426,7 +428,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        irp.mfkCodes.isEmpty ? 'Натисніть олівець, щоб додати коди МКФ...' : irp.mfkCodes, 
+                        (irp.mfkCodes == null || irp.mfkCodes!.isEmpty) ? 'Натисніть олівець, щоб додати коди МКФ...' : irp.mfkCodes!, 
                         style: const TextStyle(fontSize: 12, color: Colors.black87),
                       ),
                     ],
@@ -435,9 +437,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
-            // ==========================================
-            // БЛОК 4. АВТОМАТИЧНИЙ КОНСТРУКТОР ІРП НА N ДНІВ
-            // ==========================================
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Card(
@@ -487,8 +486,8 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           )
                         ],
                       ),
-                      if (irp.daysSchedule != null && irp.daysSchedule.isNotEmpty)
-                        ...irp.daysSchedule.entries.map((dayEntry) {
+                      if (irp.daysSchedule != null && irp.daysSchedule!.isNotEmpty)
+                        ...irp.daysSchedule!.entries.map((dayEntry) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: ExpansionTile(
@@ -527,9 +526,6 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
               ),
             ),
 
-            // ==========================================
-            // БЛОК 5. ЖУРНАЛ ВІЗИТІВ ТА ПРОВЕДЕННЯ ТЕСТУВАНЬ ЗА ШКАЛАМИ
-            // ==========================================
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -538,7 +534,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('🗒️ Фіксація візитів пацієнта:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      const Text('🗒️ Фиксація візитів пацієнта:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
                         onPressed: _createNewVisit,
@@ -548,7 +544,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  if (widget.patient.visits == null || widget.patient.visits.isEmpty)
+                  if (widget.patient.visits.isEmpty)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(20.0), 
@@ -562,6 +558,7 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                       itemCount: widget.patient.visits.length,
                       itemBuilder: (context, vIndex) {
                         final visit = widget.patient.visits[vIndex];
+                        visit.testResults ??= {}; // Безпечна ініціалізація
                         return Card(
                           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                           color: Colors.grey.shade50,
@@ -582,9 +579,9 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 8),
-                                if (visit.testResults != null && visit.testResults.isNotEmpty) ...[
+                                if (visit.testResults!.isNotEmpty) ...[
                                   const Text('Проведені в цей день тестування шкал:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                                  ...visit.testResults.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
+                                  ...visit.testResults!.entries.map((e) => Text('• ${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold))),
                                   const SizedBox(height: 8),
                                 ],
                                 SizedBox(
@@ -599,12 +596,12 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                             builder: (context) => ScalesCatalogScreen(
                                               onScaleTested: (scaleName, result) {
                                                 setState(() {
-                                                  visit.testResults[scaleName] = result;
+                                                  visit.testResults![scaleName] = result;
                                                   RegExp regExp = RegExp(r'\d+');
                                                   var match = regExp.firstMatch(result);
                                                   double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
                                                   
-                                                  widget.patient.scaleHistory.add(ScaleHistoryPoint(
+                                                  patient.scaleHistory.add(ScaleHistoryPoint(
                                                     date: DateTime.now(),
                                                     scaleName: scaleName,
                                                     score: scoreValue,
