@@ -1,174 +1,65 @@
 // lib/models.dart
 
-class Patient {
-  String id;
-  String name; // ПІБ українською
-  String birthDate;
-  String diagnosisMkh10; // Код та назва за МКХ-10
-  String admissionDate;
-  IrpPlan irp;
-  List<PatientVisit> visits;
-  List<ScaleHistoryPoint> scaleHistory; // Для динамічного графіка шкал
+// Структура даних для медичної карти пацієнта
+class PatientCard {
+  final String id;
+  final String fullName;
+  final String birthDate;
+  final String primaryDiagnosis;
+  List<String> smartGoals; 
+  List<String> icdCodes;   
+  List<String> assignedExercises;
 
-  Patient({
+  PatientCard({
     required this.id,
-    required this.name,
+    required this.fullName,
     required this.birthDate,
-    required this.diagnosisMkh10,
-    required this.admissionDate,
-    required this.irp,
-    List<PatientVisit>? visits,
-    List<ScaleHistoryPoint>? scaleHistory,
-  })  : visits = visits ?? [],
-        scaleHistory = scaleHistory ?? [];
+    required this.primaryDiagnosis,
+    required this.smartGoals,
+    required this.icdCodes,
+    required this.assignedExercises,
+  });
 
-  // Формування офіційного документа згідно з вимогами МОЗ України (ІРП)
-  String generateMoxStatement() {
-    String visitLogs = visits.isEmpty
-        ? "Візити не зафіксовані.\n"
-        : visits.map((v) => "- ${v.date.day}.${v.date.month}.${v.date.year}: ${v.therapeuticNote}").join("\n");
+  // Перетворюємо об'єкт пацієнта в Map для збереження в JSON
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'birthDate': birthDate,
+      'primaryDiagnosis': primaryDiagnosis,
+      'smartGoals': smartGoals,
+      'icdCodes': icdCodes,
+      'assignedExercises': assignedExercises,
+    };
+  }
 
-    String exerciseSchedule = "";
-    if (irp.daysSchedule.isNotEmpty) {
-      irp.daysSchedule.forEach((day, exercises) {
-        exerciseSchedule += "\n[День $day]:\n" + exercises.map((e) => "  • ${e.title} (${e.dosage}) - Опір/Стрічка: ${e.isCustomized ? 'Так' : 'Стандарт'}").join("\n");
-      });
-    } else {
-      exerciseSchedule = "Індивідуальний план вправ ще не згенеровано.";
-    }
-
-    return """
-ЗАСТЕРЕЖЕННЯ: ОФІЦІЙНИЙ ДОКУМЕНТ ІРП (НАКАЗ МОЗ УКРАЇНИ)
-==================================================
-ЗАТВЕРДЖЕНО ІНДИВІДУАЛЬНИЙ РЕАБІЛІТАЦІЙНИЙ ПЛАН
-Пацієнт: $name
-Дата народження: $birthDate
-Дата госпіталізації/початку: $admissionDate
-Спеціаліст: ${irp.specialistName}
---------------------------------------------------
-1. КЛІНІЧНИЙ ДІАГНОЗ (МКХ-10):
-$diagnosisMkh10
-
-2. КОДИ МКФ:
-${irp.mfkCodes}
-
-3. ЦІЛЬ ЗА СИСТЕМОЮ SMART:
-${irp.goalsSmart}
-
-4. ЦИКЛ РЕАБІЛІТАЦІЇ: ${irp.rehabilitationCycle}
-5. ЗАГАЛЬНИЙ ПЛАН ВТРУЧАНЬ:
-${irp.interventionPlan}
-
-6. ІНДИВІДУАЛЬНИЙ ПЛАН ВПРАВ ЗА ДНЯМИ (На ${irp.plannedDays} днів): $exerciseSchedule
-
-7. ЖУРНАЛ КЛІНІЧНИХ ВІЗИТІВ:
-$visitLogs
-==================================================
-Документ сформовано автоматично в системі MReHab у 2026 році.
-""";
+  // Створюємо об'єкт пацієнта з Map, прочитаного з JSON
+  factory PatientCard.fromMap(Map<String, dynamic> map) {
+    return PatientCard(
+      id: map['id'] ?? '',
+      fullName: map['fullName'] ?? '',
+      birthDate: map['birthDate'] ?? '',
+      primaryDiagnosis: map['primaryDiagnosis'] ?? '',
+      smartGoals: List<String>.from(map['smartGoals'] ?? []),
+      icdCodes: List<String>.from(map['icdCodes'] ?? []),
+      assignedExercises: List<String>.from(map['assignedExercises'] ?? []),
+    );
   }
 }
 
-class IrpPlan {
-  String goalsSmart;
-  String mfkCodes;
-  String rehabilitationCycle;
-  String interventionPlan;
-  String specialistName;
-  int plannedDays; // Кількість днів, на яку розраховується план
-  Map<int, List<CustomExercise>> daysSchedule; // День -> Список адаптованих вправ
-
-  IrpPlan({
-    this.goalsSmart = '',
-    this.mfkCodes = '',
-    this.rehabilitationCycle = 'Первинний',
-    this.interventionPlan = '',
-    this.specialistName = 'Ковальчук О.В.',
-    this.plannedDays = 3,
-    Map<int, List<CustomExercise>>? daysSchedule,
-  }) : daysSchedule = daysSchedule ?? {};
-}
-
-class CustomExercise {
-  String id;
-  String title;
-  String dosage;
-  bool isCustomized; // Чи вносилися ручні зміни терапевтом
-
-  CustomExercise({
-    required this.id,
-    required this.title,
-    required this.dosage,
-    this.isCustomized = false,
-  });
-}
-
-class PatientVisit {
-  String id;
-  DateTime date;
-  String therapeuticNote;
-  Map<String, String> testResults; // Назва шкали -> Результат
-
-  PatientVisit({
-    required this.id,
-    required this.date,
-    required this.therapeuticNote,
-    Map<String, String>? testResults,
-  }) : testResults = testResults ?? {};
-}
-
-class ScaleHistoryPoint {
-  final DateTime date;
-  final String scaleName;
-  final double score; // Числове значення для побудови динаміки графіку
-
-  ScaleHistoryPoint({
-    required this.date,
-    required this.scaleName,
-    required this.score,
-  });
-}
-// --- Моделі для каталогу вправ ---
-enum ExerciseAgeGroup { all, child, adult, geriatric }
-enum ExerciseIntensity { low, medium, high }
-
-class Exercise {
-  final String id;
-  final String title;
+// Структура даних для клінічних шкал
+class ClinicalScale {
+  final String name;
   final String category;
   final String description;
-  final String indications;
-  final String dosage;
-  final List<String> executionSteps;
-  final String contraindications; // ЗМІНЕНО З List<String> НА String
-  final ExerciseAgeGroup ageGroup;
-  final ExerciseIntensity intensity;
+  final String instruction;
+  final String interpretation;
 
-  const Exercise({
-    required this.id,
-    required this.title,
+  ClinicalScale({
+    required this.name,
     required this.category,
     required this.description,
-    required this.indications,
-    required this.dosage,
-    required this.executionSteps,
-    required this.contraindications, // ОНОВЛЕНО ТУТ
-    required this.ageGroup,
-    required this.intensity,
-  });
-}
-
-// --- Модель для гоніометрії ---
-class JointMovementNorm {
-  final String jointName;
-  final String movementType;
-  final int normalValue;
-  final String instruction;
-
-  const JointMovementNorm({
-    required this.jointName,
-    required this.movementType,
-    required this.normalValue,
     required this.instruction,
+    required this.interpretation,
   });
 }
