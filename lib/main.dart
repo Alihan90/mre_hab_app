@@ -10,25 +10,25 @@ class PatientCard {
   final String fullName;
   final String birthDate;
   final String primaryDiagnosis;
-  List<String> smartGoals; // База для Кроку 3 (Конструктор SMART)
-  List<String> icdCodes;   // База для Кроку 4 (Довідник МКХ-10)
+  List<String> smartGoals; 
+  List<String> icdCodes;   
 
   PatientCard({
     required this.id,
     required this.fullName,
     required this.birthDate,
     required this.primaryDiagnosis,
-    this.smartGoals = const [],
-    this.icdCodes = const [],
+    required this.smartGoals,
+    required this.icdCodes,
   });
 }
 
 // ==========================================
-// МОДУЛЬ: КЛІНІЧНІ ШКАЛИ ТА ГОНІОМЕТРІЯ (СТРУКТУРОВАНИЙ)
+// СТРУКТУРА ДАНИХ ДЛЯ КЛІНІЧНИХ ШКАЛ
 // ==========================================
 class ClinicalScale {
   final String name;
-  final String category; // Нозологічна або вікова група
+  final String category;
   final String description;
   final String instruction;
   final String interpretation;
@@ -42,451 +42,9 @@ class ClinicalScale {
   });
 }
 
-class ScalesCatalogScreen extends StatefulWidget {
-  const ScalesCatalogScreen({Key? key}) : super(key: key);
-
-  @override
-  State<ScalesCatalogScreen> createState() => _ScalesCatalogScreenState();
-}
-
-class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
-  String _searchQuery = "";
-  String _selectedCategory = "Всі";
-
-  // Клінічні та вікові категорії
-  final List<String> _categories = [
-    "Всі",
-    "Неврологія (дорослі)",
-    "Ортопедія та Травматологія",
-    "Кардіо-респіраторна",
-    "Загальнофункціональні",
-    "Pediatria (Дитячі вікові)",
-    "Інструменти"
-  ];
-
-  // Повна структурована база клінічних шкал
-  final List<ClinicalScale> _scales = [
-    // --- НЕВРОЛОГІЯ ---
-    ClinicalScale(
-      name: "Модифікована шкала спастичності Ашворт (MAS)",
-      category: "Неврологія (дорослі)",
-      description: "Оцінка м'язового тонусу при дослідженні пасивних рухів у хворих з ураженням ЦНС.",
-      instruction: "Проведіть пасивне zгинання/розгинання кінцівки у швидкому темпі. Оцініть опір.",
-      interpretation: "0: Тонус не підвищений\n1: Легке підвищення (наприкінці руху)\n1+: Легке підвищення (менше половини амплітуди)\n2: Помірне підвищення тонусу, але рух легкий\n3: Значне підвищення тонусу, пасивний рух ускладнений\n4: Уражена частина ригідна (нерухома)",
-    ),
-    ClinicalScale(
-      name: "Шкала інсульту Національного інституту здоров'я (NIHSS)",
-      category: "Неврологія (дорослі)",
-      description: "Клінічна оцінка тяжкості неврологічного дефіциту у пацієнтів з інсультом.",
-      instruction: "Оцініть за чергою 11 параметрів: свідомість, погляд, поля зору, парез обличчя, сила рук/ніг, атаксія, чутливість, мова, дизартрія, ігнорування.",
-      interpretation: "0-4 балів: Легкий ступінь інсульту\n5-15 балів: Помірний інсульт\n16-20 балів: Середньо-важкий інсульт\n21-42 балів: Важкий інсульт",
-    ),
-    ClinicalScale(
-      name: "Модифікована шкала Ренкіна (mRS)",
-      category: "Неврологія (дорослі)",
-      description: "Оцінка ступеня інвалідизації та загальної незалежності після судинних катастроф.",
-      instruction: "Шляхом опитування виявіть рівень обмеження повсякденної активності.",
-      interpretation: "0: Немає симптомів\n1: Є симптоми, але без обмежень\n2: Легка інвалідність (самообслуговування збережене)\n3: Помірна інвалідність (потрібна допомога, але ходить самостійно)\n4: Важка інвалідність (не ходить без допомоги)\n5: Дуже важка інвалідність (прикутий до ліжка)\n6: Смерть",
-    ),
-    ClinicalScale(
-      name: "Тест оцінки функції руки Френчай (Frenchay Arm Test)",
-      category: "Неврологія (дорослі)",
-      description: "Оцінка проксимальної та дистальної функції паретичної верхньої кінцівки.",
-      instruction: "Запропонуйте пацієнту виконати 5 побутових завдань (стабілізувати лінійку, взяти склянку, піднести руку до голови тощо). Кожен успіх — 1 бал.",
-      interpretation: "0 балів: Рука повністю нефункціональна\n5 балів: Повна функція руки",
-    ),
-    ClinicalScale(
-      name: "Шкала коми Глазго (GCS)",
-      category: "Неврологія (дорослі)",
-      description: "Оцінка ступеня пригнічення свідомості та глибини коми (напр., при ЧМТ).",
-      instruction: "Сумуйте бали за трьома тестами: розплющування очей (1-4), мовна реакція (1-5), рухова реакція (1-6).",
-      interpretation: "15 балів: Ясна свідомість\n13-14 балів: Оглушення\n9-12 балів: Сопор\n3-8 балів: Кома (8 і менше — критичний стан)",
-    ),
-
-    // --- ОРТОПЕДІЯ ---
-    ClinicalScale(
-      name: "Індекс життєдіяльності Освестрі (ODI)",
-      category: "Ортопедія та Травматологія",
-      description: "Оцінка впливу больового синдрому в попереку (дорсалгії) на повсякденне життя.",
-      instruction: "Оцініть 10 секцій життєдіяльності (інтенсивність болю, сон, ходьба, стояння, подорожі тощо) від 0 до 5 балів.",
-      interpretation: "0-20%: Мінімальне обмеження функцій\n21-40%: Помірне обмеження\n41-60%: Важке обмеження функцій\n61-80%: Критичне порушення (інвалідність)\n81-100%: Повна залежність / симуляція",
-    ),
-    ClinicalScale(
-      name: "Візуально-аналогова шкала болю (VAS / ЧРШ)",
-      category: "Ортопедія та Травматологія",
-      description: "Суб'єктивний метод експрес-оцінки інтенсивності болю пацієнтом.",
-      instruction: "Запропонуйте пацієнту обрати цифрове значення від 0 (немає болю) до 10 (нестерпний біль).",
-      interpretation: "1-3 бали: Слабкий біль\n4-6 балів: Помірний біль\n7-10 балів: Сильний / критичний біль",
-    ),
-    ClinicalScale(
-      name: "Мануальне м'язове тестування (MMT за Ловеттом)",
-      category: "Ортопедія та Травматологія",
-      description: "Оцінка сили та витривалості окремих м'язових груп.",
-      instruction: "Протестуйте ізольований рух м'яза проти сили тяжіння та проти ручного супротиву терапевта.",
-      interpretation: "0: Скорочення немає\n1: Пальпується «слід» скорочення\n2: Рух у повній амплітуді БЕЗ сили тяжіння\n3: Рух проти сили тяжіння\n4: Рух проти сили тяжіння та помірного опору\n5: Нормальна м'язова сила",
-    ),
-
-    // --- КАРДІО ---
-    ClinicalScale(
-      name: "Тест 6-хвилинної ходьби (6MWT)",
-      category: "Кардіо-респіраторна",
-      description: "Оцінка толерантності до фізичних навантажень та кардіореспіраторної системи.",
-      instruction: "Виміряйте максимальну відстань (у метрах), яку пацієнт пройде по прямій траєкторії за 6 хвилин у комфортному темпі.",
-      interpretation: "Результат оцінюється індивідуально. Зниження від норми відображає динаміку серцевої або легеневої недостатності.",
-    ),
-
-    // --- ЗАГАЛЬНОФУНКЦІОНАЛЬНІ ---
-    ClinicalScale(
-      name: "Індекс активності повсякденного життя Бартел (Barthel Index)",
-      category: "Загальнофункціональні",
-      description: "Стандарт оцінки базової самостійності та життєдіяльності пацієнта в стаціонарі.",
-      instruction: "Оцініть 10 пунктів самообслуговування та переміщення.",
-      interpretation: "0-20 б: Повна залежність\n21-60 б: Тяжка залежність\n61-90 б: Помірна залежність\n91-99 б: Легка залежність\n100 б: Повна незалежність",
-    ),
-    ClinicalScale(
-      name: "Шкала рівноваги Берга (Berg Balance Scale)",
-      category: "Загальнофункціональні",
-      description: "Комплексний тест статичної та динамічної рівноваги, визначення ризику падінь.",
-      instruction: "Попросіть пацієнта виконати 14 рухових завдань (стояння, вставання, нахили, повороти). Оцінка кожного від 0 до 4.",
-      interpretation: "0-20 балів: Високий ризик падінь\n21-40 балів: Середній ризик падінь\n41-56 балів: Низький ризик, безпечна ходьба",
-    ),
-    ClinicalScale(
-      name: "Індекс мобільності Рівермід (RMI)",
-      category: "Загальнофункціональні",
-      description: "Скринінг мобільності від базових поворотів у ліжку до бігу.",
-      instruction: "Оцініть 15 дій (14 опитування, 1 пряме спостереження стояння). За кожне «Так» — 1 бал.",
-      interpretation: "0 балів: Повна нерухомість\n15 балів: Максимальна функціональна мобільність",
-    ),
-    ClinicalScale(
-      name: "Тест «Встань та йди» (Timed Up and Go - TUG)",
-      category: "Загальнофункціональні",
-      description: "Швидкий функціональний тест мобільності та динамічного балансу.",
-      instruction: "Засічіть час, за який пацієнт встане зі стільця, пройде 3 метри, розвернеться і знову сяде.",
-      interpretation: "< 10 сек: Повна норма\n11-20 сек: Початкові порушення мобільності\n> 20 сек: Виражені порушення, високий ризик падінь",
-    ),
-    ClinicalScale(
-      name: "Тест кубиків у коробці (Box and Block Test)",
-      category: "Загальнофункціональні",
-      description: "Оцінка грубої мануальної спритності та швидкості координації рук.",
-      instruction: "Підрахуйте кількість кубиків, перенесених по одному через перегородку коробки за 60 секунд.",
-      interpretation: "Показники порівнюють із віковими нормами та здоровою кінцівкою.",
-    ),
-    ClinicalScale(
-      name: "Функціональні категорії ходьби (FAC)",
-      category: "Загальнофункціональні",
-      description: "Класифікація рівня незалежності при ходьбі та потреби у фізичній підтримці.",
-      instruction: "Визначте ступінь участі рук терапевта при страховці ходьби пацієнта на 3 метрах.",
-      interpretation: "0: Не ходить\n1: Потрібна безперервна підтримка 2 осіб\n2: Підтримка 1 особи\n3: Тільки нагляд/команди\n4: Ходить сам лише по рівному\n5: Повна незалежність скрізь",
-    ),
-    ClinicalScale(
-      name: "Динамічний індекс ходьби (DGI)",
-      category: "Загальнофункціональні",
-      description: "Дослідження здатності пацієнта адаптувати ходьбу до складних зовнішніх умов.",
-      instruction: "Оцініть 8 завдань (зміна швидкості, повороти голови під час руху, обходження перешкод, сходи).",
-      interpretation: "< 19 балів із 24: Висока ймовірність падінь під час ходьби",
-    ),
-
-    // --- ПЕДІАТРІЯ ---
-    ClinicalScale(
-      name: "Велика моторна функція (GMFM-88 / GMFM-66)",
-      category: "Pediatria (Дитячі вікові)",
-      description: "Стандартизований тест оцінки змін великої моторики у дітей з ДЦП та руховими затримками.",
-      instruction: "Проведіть тестування у 5 блоках: А (лежання та повороти), В (сидіння), С (повзання та на колінах), D (стояння), Е (ходьба, біг, стрибки).",
-      interpretation: "Розраховується відсотковий показник виконання завдань для кожного вікового рівня відповідно до критеріїв GMFCS.",
-    ),
-    ClinicalScale(
-      name: "Шкала моторного розвитку немовлят Альберти (AIMS)",
-      category: "Pediatria (Дитячі вікові)",
-      description: "Оцінка моторного дозрівання малюків від народження до самостійної ходьби (0-18 місяців).",
-      instruction: "Спостерігайте за спонтанною руховою активністю дитини в 4 положеннях: на животі, на спині, сидячи та стоячи.",
-      interpretation: "Бали наносяться на віковий перцентильний графік. Показник нижче 5-го перцентиля вказує на затримку розвитку.",
-    ),
-    ClinicalScale(
-      name: "Тест розвитку зорово-моторної інтеграції Ерхардта (EDVA)",
-      category: "Pediatria (Дитячі вікові)",
-      description: "Оцінка специфічних компонентів рухів рук та зорово-моторної координації у дітей із порушеннями розвитку.",
-      instruction: "Перевірте мимовільні та довільні реакції: фіксація погляду, простежування, захоплення та маніпуляції з предметами.",
-      interpretation: "Визначається відповідність функцій верхньої кінцівки та зорового гнозису календарному віку дитини.",
-    ),
-
-    // --- ІНСТРУМЕНТИ ---
-    ClinicalScale(
-      name: "📐 Інструмент: Гоніометрія (Суглобовий статус за ROM)",
-      category: "Інструменти",
-      description: "Калькулятор дефіциту амплітуди активних та пасивних рухів у суглобах кінцівок.",
-      instruction: "Введіть стандартну анатомічну норму для обраного руху та фактичний показник кута, отриманий механічним гоніометром.",
-      interpretation: "Розрахунок дефіциту кута в градусах та відсотках відхилення від фізіологічної норми.",
-    ),
-  ];
-
-  void _openScaleDetail(ClinicalScale scale) {
-    if (scale.category == "Інструменти") {
-      _openGoniometryCalculator();
-      return;
-    }
-
-    final scoreController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20, left: 16, right: 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Chip(
-                label: Text(scale.category, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                backgroundColor: Colors.indigo.shade600,
-              ),
-              const SizedBox(height: 5),
-              Text(scale.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
-              const Divider(),
-              const Text("📋 Опис:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(scale.description),
-              const SizedBox(height: 10),
-              const Text("🚀 Методика проведення:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(scale.instruction),
-              const SizedBox(height: 10),
-              const Text("🔍 Інтерпретація результатів:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
-                child: Text(scale.interpretation, style: const TextStyle(fontSize: 13, fontFamily: 'Courier')),
-              ),
-              const SizedBox(height: 15),
-              const Text("🔢 Фіксація балів:", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: scoreController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Сумарний бал або результат",
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                    onPressed: () {
-                      if (scoreController.text.isNotEmpty) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Результат (${scoreController.text}) успішно зафіксовано")),
-                        );
-                      }
-                    },
-                    child: const Text("Оцінити", style: TextStyle(color: Colors.white)),
-                  )
-                ],
-              ),
-              const SizedBox(height: 25),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openGoniometryCalculator() {
-    final normController = TextEditingController();
-    final factController = TextEditingController();
-    String resultString = "";
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: 20, left: 16, right: 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("📐 Калькулятор гоніометрії (ROM)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
-              const Divider(),
-              const Text("Введіть нормальну анатомічну амплітуду суглоба та фактично виміряний кут руху:"),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: normController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Анатомічна норма (°)", border: OutlineInputBorder()),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: factController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Кут пацієнта (°)", border: OutlineInputBorder()),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              if (resultString.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red.shade200)),
-                  child: Text(resultString, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
-                ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Закрити", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                      onPressed: () {
-                        final double? norm = double.tryParse(normController.text);
-                        final double? fact = double.tryParse(factController.text);
-                        if (norm != null && fact != null && norm > 0) {
-                          final double deficitDeg = norm - fact;
-                          final double deficitPct = (deficitDeg / norm) * 100;
-                          setModalState(() {
-                            resultString = "Дефіцит амплітуди рухів:\n🔻 ${deficitDeg.toStringAsFixed(1)}° (${deficitPct.toStringAsFixed(1)}% від фізіологічної норми)";
-                          });
-                        }
-                      },
-                      child: const Text("Розрахувати", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 25),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredScales = _scales.where((s) {
-      final matchesCategory = _selectedCategory == "Всі" || s.category == _selectedCategory;
-      final matchesSearch = s.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                            s.description.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).toList();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Клінічні шкали за групами"),
-        backgroundColor: Colors.indigo.shade600,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: "Швидкий пошук шкали чи тесту",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (val) => setState(() => _searchQuery = val),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  final isSelected = _selectedCategory == cat;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ChoiceChip(
-                      label: Text(cat, style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 12)),
-                      selected: isSelected,
-                      selectedColor: Colors.indigo.shade600,
-                      backgroundColor: Colors.grey.shade200,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          _selectedCategory = cat;
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: filteredScales.isEmpty
-                  ? const Center(child: Text("Тестів у цій групі не знайдено"))
-                  : ListView.builder(
-                      itemCount: filteredScales.length,
-                      itemBuilder: (context, index) {
-                        final scale = filteredScales[index];
-                        final isGonio = scale.category == "Інструменти";
-                        return Card(
-                          elevation: 1.5,
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          child: ListTile(
-                            leading: Icon(
-                              isGonio ? Icons.architecture : Icons.category_outlined,
-                              color: isGonio ? Colors.teal : Colors.indigo.shade400,
-                              size: 26,
-                            ),
-                            title: Text(scale.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text(scale.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5)),
-                            ),
-                            trailing: const Icon(Icons.play_circle_fill, color: Colors.indigo, size: 26),
-                            onTap: () => _openScaleDetail(scale),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ==========================================
-// ДРУГОРЯДНІ СЕКЦІЇ (БУДУТЬ ОНОВЛЮВАТИСЬ ДАЛІ)
+// ГОЛОВНА ТОЧКА ВХОДУ В ДОДАТОК
 // ==========================================
-class ExercisesCatalogView extends StatelessWidget {
-  const ExercisesCatalogView({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Вправи та ЛФК")));
-}
-
-// Головна точка входу
 void main() {
   runApp(const RehabilitationApp());
 }
@@ -519,7 +77,7 @@ class RehabilitationApp extends StatelessWidget {
 }
 
 // ==========================================
-// 1. ГОЛОВНИЙ ЕКРАН — РОБОЧИЙ СТІЛ (6 ПЛИТОК)
+// 1. РОБОЧИЙ СТІЛ (МЕНЮ НА 6 ПЛИТОК)
 // ==========================================
 class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({Key? key}) : super(key: key);
@@ -529,13 +87,14 @@ class MainDashboardScreen extends StatefulWidget {
 }
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
+  // Централізований глобальний стан у пам'яті програми
   final List<PatientCard> _globalPatients = [
     PatientCard(
       id: "1",
       fullName: "Іваненко Петро Миколайович",
       birthDate: "15.05.1978",
       primaryDiagnosis: "Наслідки ішемічного інсульту, лівобічний геміпарез",
-      smartGoals: ["Збільшити кут згинання у ліктьовому суглобі до 90° за 3 тижні"],
+      smartGoals: ["Ціль: Збільшити кут згинання у ліктьовому суглобі (до 90°). Термін: за 3 тижні."],
       icdCodes: ["I69.3"],
     ),
     PatientCard(
@@ -543,7 +102,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       fullName: "Сидоренко Ольга Володимирівна",
       birthDate: "22.11.1990",
       primaryDiagnosis: "Компресійний перелом L1 хребця, стан після металоостеосинтезу",
-      smartGoals: ["Ходьба без опори на відстань до 100м без болю за 14 днів"],
+      smartGoals: ["Ціль: Ходьба без опори на відстань до 100м. Термін: за 14 днів."],
       icdCodes: ["S32.0"],
     ),
   ];
@@ -552,10 +111,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "MReHab — Робочий стіл",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("MReHab — Робочий стіл", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
@@ -591,7 +147,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                   _buildDashboardCard(
                     context,
                     title: "Клінічні шкали",
-                    subtitle: "16 тестів та Гоніометрія",
+                    subtitle: "20 тестів та Гоніометрія",
                     icon: Icons.assignment,
                     color: Colors.indigo.shade600,
                     destination: const ScalesCatalogScreen(),
@@ -602,7 +158,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     subtitle: "SMART критерії",
                     icon: Icons.track_changes,
                     color: Colors.green.shade600,
-                    destination: const EmbeddedSmartGoalsScreen(),
+                    destination: EmbeddedSmartGoalsScreen(
+                      patients: _globalPatients,
+                      onGoalSaved: () => setState(() {}),
+                    ),
                   ),
                   _buildDashboardCard(
                     context,
@@ -610,7 +169,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     subtitle: "Діагностичні коди",
                     icon: Icons.assignment_turned_in,
                     color: Colors.amber.shade700,
-                    destination: const EmbeddedIcdScreen(),
+                    destination: EmbeddedIcdScreen(
+                      patients: _globalPatients,
+                      onIcdAssigned: () => setState(() {}),
+                    ),
                   ),
                   _buildDashboardCard(
                     context,
@@ -654,7 +216,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => destination));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Модуль налаштовується")),
+              const SnackBar(content: Text("Модуль налаштування у розробці")),
             );
           }
         },
@@ -671,9 +233,9 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                 child: Icon(icon, size: 32, color: color),
               ),
               const Spacer(),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.2)),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, height: 1.2)),
               const SizedBox(height: 2),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey.shade600, height: 1.2)),
+              Text(subtitle, style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600, height: 1.2)),
             ],
           ),
         ),
@@ -683,7 +245,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
 }
 
 // ==========================================
-// 🛠️ ЕКРАН БАЗИ ПАЦІЄНТІВ
+// 2. РЕЄСТР ТА МЕДИЧНІ КАРТКИ ПАЦІЄНТІВ
 // ==========================================
 class PatientsScreen extends StatefulWidget {
   final List<PatientCard> patients;
@@ -715,21 +277,11 @@ class _PatientsScreenState extends State<PatientsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "ПІБ Пацієнта", border: OutlineInputBorder()),
-              ),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: "ПІБ Пацієнта", border: OutlineInputBorder())),
               const SizedBox(height: 10),
-              TextField(
-                controller: dateController,
-                decoration: const InputDecoration(labelText: "Дата народження (ДД.ММ.РРРР)", border: OutlineInputBorder()),
-              ),
+              TextField(controller: dateController, decoration: const InputDecoration(labelText: "Дата народження (ДД.ММ.РРРР)", border: OutlineInputBorder())),
               const SizedBox(height: 10),
-              TextField(
-                controller: diagnosisController,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: "Первинний діагноз", border: OutlineInputBorder()),
-              ),
+              TextField(controller: diagnosisController, maxLines: 2, decoration: const InputDecoration(labelText: "Первинний діагноз", border: OutlineInputBorder())),
             ],
           ),
         ),
@@ -766,7 +318,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
       MaterialPageRoute(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text("Медична карта пацієнта"),
+            title: const Text("Медична карта"),
             backgroundColor: Colors.blue.shade700,
             foregroundColor: Colors.white,
           ),
@@ -796,15 +348,13 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 const Text("📌 Реабілітаційні цілі (SMART)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 5),
                 patient.smartGoals.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Цілі ще не встановлено. Скористайтеся Конструктором SMART на робочому столі."),
-                      )
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Цілі відсутні. Сформуйте їх у Конструкторі SMART."))
                     : Column(
                         children: patient.smartGoals.map((goal) => Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
                             leading: const Icon(Icons.track_changes, color: Colors.green),
-                            title: Text(goal),
+                            title: Text(goal, style: const TextStyle(fontSize: 13)),
                           ),
                         )).toList(),
                       ),
@@ -812,10 +362,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 const Text("🗂️ Зареєстровані коди МКХ-10", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 5),
                 patient.icdCodes.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Коди не додано. Використовуйте довідник МКХ на робочому столі."),
-                      )
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Коди не закріплені. Виберіть коди в модулі МКХ-10."))
                     : Wrap(
                         spacing: 8,
                         children: patient.icdCodes.map((code) => Chip(
@@ -839,21 +386,13 @@ class _PatientsScreenState extends State<PatientsScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Реєстр пацієнтів"),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-      </td>
+      appBar: AppBar(title: const Text("Реєстр пацієнтів"), backgroundColor: Colors.blue.shade700, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
             TextField(
-              decoration: const InputDecoration(
-                labelText: "Пошук пацієнта за ПІБ",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: "Пошук пацієнта за ПІБ", prefixIcon: Icon(Icons.search), border: OutlineInputBorder()),
               onChanged: (val) => setState(() => _searchQuery = val),
             ),
             const SizedBox(height: 12),
@@ -866,15 +405,12 @@ class _PatientsScreenState extends State<PatientsScreen> {
                         final patient = filteredPatients[index];
                         return Card(
                           elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          margin: const EdgeInsets.symmetric(vertical: 5),
                           child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue.shade100,
-                              child: Icon(Icons.person, color: Colors.blue.shade700),
-                            ),
-                            title: Text(patient.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("Діагноз: ${patient.primaryDiagnosis}", maxLines: 1, overflow: TextOverflow.ellipsis),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                            leading: CircleAvatar(backgroundColor: Colors.blue.shade100, child: Icon(Icons.person, color: Colors.blue.shade700)),
+                            title: Text(patient.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            subtitle: Text("Діагноз: ${patient.primaryDiagnosis}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 14),
                             onTap: () => _openPatientJournal(patient),
                           ),
                         );
@@ -894,36 +430,447 @@ class _PatientsScreenState extends State<PatientsScreen> {
 }
 
 // ==========================================
-// 2. ВБУДОВАНИЙ ЕКРАН КОНСТРУКТОРА ЦІЛЕЙ SMART
+// 3. ПОВНИЙ КАТАЛОГ 20 КЛІНІЧНИХ ШКАЛ + ГОНІОМЕТРІЯ
+// ==========================================
+class ScalesCatalogScreen extends StatefulWidget {
+  const ScalesCatalogScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ScalesCatalogScreen> createState() => _ScalesCatalogScreenState();
+}
+
+class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
+  String _searchQuery = "";
+  String _selectedCategory = "Всі";
+
+  final List<String> _categories = ["Всі", "Неврологія (дорослі)", "Ортопедія та Травматологія", "Кардіо-респіраторна", "Загальнофункциональні", "Pediatria (Дитячі вікові)", "Інструменти"];
+
+  final List<ClinicalScale> _scales = [
+    // === НЕВРОЛОГІЯ (ДОРОСЛІ) ===
+    ClinicalScale(
+      name: "Модифікована шкала спастичності Ашворт (MAS)",
+      category: "Неврологія (дорослі)",
+      description: "Оцінка м'язового тонусу та спастичності при дослідженні пасивних рухів кінцівок.",
+      instruction: "Проведіть пасивне згинання/розгинання кінцівки у швидкому темпі. Оцініть опір.",
+      interpretation: "0: Тонус не підвищений\n1: Легке підвищення (наприкінці руху)\n1+: Легке підвищення (менше половини амплітуди)\n2: Помірне підвищення тонусу, але рух легкий\n3: Значне підвищення тонусу, пасивний рух ускладнений\n4: Уражена частина ригідна",
+    ),
+    ClinicalScale(
+      name: "Шкала інсульту Національного інституту здоров'я (NIHSS)",
+      category: "Неврологія (дорослі)",
+      description: "Клінічна оцінка тяжкості неврологічного дефіциту у пацієнтів з гострим інсультом.",
+      instruction: "Оцініть за чергою 11 параметрів: свідомість, погляд, поля зору, парез обличчя, сила рук/ніг, атаксія, чутливість, мова, дизартрія, ігнорування.",
+      interpretation: "0-4 балів: Легкий ступінь інсульту\n5-15 балів: Помірний інсульт\n16-20 балів: Середньо-важкий інсульт\n21-42 балів: Важкий інсульт",
+    ),
+    ClinicalScale(
+      name: "Модифікована шкала Ренкіна (mRS)",
+      category: "Неврологія (дорослі)",
+      description: "Оцінка ступеня інвалідизації та загальної незалежності пацієнта після судинних катастроф.",
+      instruction: "Шляхом клінічного опитування виявіть рівень обмеження повсякденної життєдіяльності.",
+      interpretation: "0: Немає симптомів\n1: Є симптомів, але без обмежень\n2: Легка інвалідність\n3: Помірна інвалідність (ходить сам)\n4: Важка інвалідність (не ходить без сторонньої допомоги)\n5: Дуже важка (прикутий до ліжка)",
+    ),
+    ClinicalScale(
+      name: "Тест оцінки функції руки Френчай (Frenchay Arm Test)",
+      category: "Неврологія (дорослі)",
+      description: "Оцінка проксимальної та дистальної рухової функції паретичної верхньої кінцівки.",
+      instruction: "Запропонуйте виконати 5 побутових завдань (стабілізувати лінійку, взяти склянку, піднести руку до голови тощо). Кожен успіх — 1 бал.",
+      interpretation: "0 балів: Рука повністю нефункциональна\n5 балів: Повна збережена функція руки",
+    ),
+    ClinicalScale(
+      name: "Шкала коми Глазго (GCS)",
+      category: "Неврологія (дорослі)",
+      description: "Оцінка ступеня пригнічення свідомості та глибини коми (наприклад, при ЧМТ).",
+      instruction: "Сумуйте бали за трьома тестами: розплющування очей (1-4), мовна реакція (1-5), рухова реакція (1-6).",
+      interpretation: "15 балів: Ясна свідомість\n13-14 балів: Оглушення\n9-12 балів: Сопор\n3-8 балів: Кома (8 і менше — критичний стан)",
+    ),
+
+    // === ОРТОПЕДІЯ ТА ТРАВМАТОЛОГІЯ ===
+    ClinicalScale(
+      name: "Індекс життєдіяльності Освестрі (ODI)",
+      category: "Ортопедія та Травматологія",
+      description: "Оцінка впливу больового синдрому в нижній частині спини (попереку) на повсякденне життя.",
+      instruction: "Оцініть 10 секцій життєдіяльності (біль, сон, ходьба, стояння, соціальне життя) від 0 до 5 балів.",
+      interpretation: "0-20%: Мінімальне обмеження функцій\n21-40%: Помірне обмеження\n41-60%: Важке обмеження\n61-80%: Критичне порушення (інвалідність)\n81-100%: Повна залежність / симуляція",
+    ),
+    ClinicalScale(
+      name: "Візуально-аналогова шкала болю (VAS / ЧРШ)",
+      category: "Ортопедія та Травматологія",
+      description: "Суб'єктивний метод експрес-оцінки інтенсивності болю пацієнтом.",
+      instruction: "Запропонуйте пацієнту обрати цифрове значення від 0 (немає болю) до 10 (нестерпний критичний біль).",
+      interpretation: "1-3 бали: Слабкий біль\n4-6 балів: Помірний біль\n7-10 балів: Сильний/критичний біль",
+    ),
+    ClinicalScale(
+      name: "Мануальне м'язове тестування (MMT за Ловеттом)",
+      category: "Ортопедія та Травматологія",
+      description: "Оцінка сили та витривалості окремих м'язових груп за 5-бальною системою.",
+      instruction: "Протестуйте ізольований рух м'яза проти сили тяжіння та проти ручного супротиву терапевта.",
+      interpretation: "0: Скорочення немає\n1: «Слід» скорочення (пальпується)\n2: Рух у повній амплітуді БЕЗ сили тяжіння\n3: Рух проти сили тяжіння\n4: Рух проти сили тяжіння та помірного опору\n5: Норма",
+    ),
+
+    // === КАРДІО-РЕСПІРАТОРНА ===
+    ClinicalScale(
+      name: "Тест 6-хвилинної ходьби (6MWT)",
+      category: "Кардіо-респіраторна",
+      description: "Оцінка толерантності до фізичних навантажень та кардіореспіраторного статусу.",
+      instruction: "Виміряйте максимальну відстань (у метрах), яку пацієнт здатний пройти по прямій за 6 хвилин у комфортному темпі.",
+      interpretation: "Результат оцінюється індивідуально за віковими таблицями та у динаміці проведення терапії.",
+    ),
+    ClinicalScale(
+      name: "Борг Шкала Сприйняття Навантаження (RPE Borg Scale)",
+      category: "Кардіо-респіраторна",
+      description: "Суб'єктивна оцінка фізичного напруження, втоми та задишки під час занять ЛФК.",
+      instruction: "Пацієнт оцінює свою втому безпосередньо під час навантаження за шкалою від 6 (спокій) до 20 (максимум).",
+      interpretation: "6-11: Легке навантаження\n12-14: Помірний рівень (оптимальна цільова зона для кардіо-реабілітації)\n15-18: Важке навантаження\n19-20: Граничне навантаження",
+    ),
+    ClinicalScale(
+      name: "Індекс задишки за шкалою MRC (Dyspnea Scale)",
+      category: "Кардіо-респіраторна",
+      description: "Оцінка ступеня задишки при хронічних легеневих або серцево-судинних захворюваннях.",
+      instruction: "Опитайте пацієнта про побутові умови виникнення відчуття нестачі повітря.",
+      interpretation: "Грейд 0: Тільки при сильному навантаженні\nГрейд 1: При швидкій ходьбі або підйомі під гору\nГрейд 2: Через задишку ходить повільніше за однолітків\nГрейд 3: Зупиняється через задишку після ходьби на 100 метрів\nГрейд 4: Задишка заважає виходити з дому чи одягатися",
+    ),
+
+    // === ЗАГАЛЬНОФУНКЦІОНАЛЬНІ ===
+    ClinicalScale(
+      name: "Індекс активності повсякденного життя Бартел (Barthel Index)",
+      category: "Загальнофункциональні",
+      description: "Клінічний стандарт оцінки базової незалежності та самообслуговування пацієнта.",
+      instruction: "Оцініть 10 пунктів щоденної активності (харчування, особиста гігієна, переміщення, туалет тощо).",
+      interpretation: "0-20 б: Повна залежність\n21-60 б: Тяжка залежність\n61-90 б: Помірна залежність\n91-100 б: Повна функціональна незалежність",
+    ),
+    ClinicalScale(
+      name: "Шкала рівноваги Берга (Berg Balance Scale)",
+      category: "Загальнофункциональні",
+      description: "Комплексний тест статичної та динамічної рівноваги, визначення ризику падінь пацієнта.",
+      instruction: "Попросіть виконати 14 функціональних рухових завдань (стояння, вставання, повороти). Оцінка від 0 до 4 кожне.",
+      interpretation: "0-20 балів: Високий ризик падінь\n21-40 балів: Середній ризик падінь\n41-56 балів: Низький ризик, безпечна самостійна ходьба",
+    ),
+    ClinicalScale(
+      name: "Індекс мобільності Рівермід (RMI)",
+      category: "Загальнофункциональні",
+      description: "Скринінгова оцінка рівня мобільності від базових поворотів у ліжку до бігу.",
+      instruction: "Оцініть 15 дій (14 шляхом опитування, 1 — прямим спостереженням стояння). За кожне «Так» — 1 бал.",
+      interpretation: "0 балів: Повна нерухомість\n15 балів: Максимально можлива функціональна мобільність пацієнта",
+    ),
+    ClinicalScale(
+      name: "Тест «Встань та йди» (Timed Up and Go - TUG)",
+      category: "Загальнофункциональні",
+      description: "Швидкий функціональний тест для оцінки динамічного балансу та швидкості переміщення.",
+      instruction: "Засічіть час (у сек), за який пацієнт встане зі стільця, пройде 3 метри, розвернеться і сяде назад.",
+      interpretation: "< 10 сек: Повна норма мобільності\n11-20 сек: Початкові незначні порушення\n> 20 сек: Виражені порушення балансу, високий ризик падінь",
+    ),
+    ClinicalScale(
+      name: "Тест кубиків у коробці (Box and Block Test)",
+      category: "Загальнофункциональні",
+      description: "Оцінка грубої мануальної спритності, координації рухів та швидкості рук.",
+      instruction: "Підрахуйте кількість дерев'яних кубиків, перенесених по одному через перегородку коробки за 60 секунд.",
+      interpretation: "Отримані показники порівнюють із віковими нормами та симетричною (здоровою) кінцівкою.",
+    ),
+    ClinicalScale(
+      name: "Функціональні категорії ходьби (FAC)",
+      category: "Загальнофункциональні",
+      description: "Класифікація рівня незалежності пацієнта під час ходьби та ступеня потреби у страховці.",
+      instruction: "Визначте ступінь участі рук терапевта при страховці ходьби пацієнта на відрізку 3 метрів.",
+      interpretation: "0: Не ходить\n1-2: Потрібна безперервна фізична підтримка (1 або 2 осіб)\n3: Потрібен лише вербальний нагляд або усна команда\n4-5: Самостійна ходьба по рівній або будь-якій поверхні",
+    ),
+    ClinicalScale(
+      name: "Динамічний індекс ходьби (DGI)",
+      category: "Загальнофункциональні",
+      description: "Дослідження здатності пацієнта адаптувати ходьбу під складні змінні зовнішні умови.",
+      instruction: "Оцініть 8 завдань (зміна темпу, ходьба з поворотами голови, обходження перешкод, сходи).",
+      interpretation: "< 19 балів із 24: Висока ймовірність падінь під час локомоції",
+    ),
+
+    // === ПЕДІАТРІЯ ===
+    ClinicalScale(
+      name: "Велика моторна функція (GMFM-88 / GMFM-66)",
+      category: "Pediatria (Дитячі вікові)",
+      description: "Стандартизований тест кількісної оцінки змін великої моторики у дітей з ДЦП.",
+      instruction: "Проведіть тестування за 5 функціональними блоками: від положення лежачи до бігу та стрибків.",
+      interpretation: "Розраховується загальний відсотковий показник виконання завдань відповідно до рівнів клінічної класифікації GMFCS.",
+    ),
+    ClinicalScale(
+      name: "Шкала оцінки болю у дітей FLACC",
+      category: "Pediatria (Дитячі вікові)",
+      description: "Поведінкова шкала оцінки інтенсивності болю у дітей (від 2 міс до 7 років) або невербальних пацієнтів.",
+      instruction: "Спостерігайте за пацієнтом 1-5 хв. Оцініть обличчя, ноги, активність, крик, втішання від 0 до 2 балів кожне.",
+      interpretation: "0 б: Комфорт / спокій\n1-3 б: Легкий дискомфорт\n4-6 б: Помірний больовий синдром\n7-10 б: Виражений сильний біль / критичний стрес",
+    ),
+    ClinicalScale(
+      name: "Шкала моторного розвитку немовлят Альберти (AIMS)",
+      category: "Pediatria (Дитячі вікові)",
+      description: "Оцінка моторного дозрівання малюків від народження до моменту самостійної ходьби (0-18 місяців).",
+      instruction: "Спостерігайте за спонтанною активністю дитини у 4 базових положеннях: на животі, на спині, сидячи та стоячи.",
+      interpretation: "Сума балів наноситься на перцентильний графік. Показник нижче 5-го перцентиля свідчить про затримку розвитку.",
+    ),
+    ClinicalScale(
+      name: "Тест розвитку зорово-моторної інтеграції Ерхардта (EDVA)",
+      category: "Pediatria (Дитячі вікові)",
+      description: "Оцінка специфічних компонентів рухів рук та зорово-моторної координації у дітей із порушеннями.",
+      instruction: "Перевірте мимовільні та довільні реакції: фіксація погляду, простежування предмета, захоплення та маніпуляції.",
+      interpretation: "Визначається відповідність поточної рухової функції верхньої кінцівки паспортному віку дитини.",
+    ),
+
+    // === ІНСТРУМЕНТИ ===
+    ClinicalScale(
+      name: "📐 Інструмент: Гоніометрія (Суглобовий статус за ROM)",
+      category: "Інструменти",
+      description: "Калькулятор дефіциту амплітуди активних та пасивних рухів у суглобах кінцівок.",
+      instruction: "Введіть стандартну анатомічну норму для руху та фактичний показник кута, отриманий механічним гоніометром.",
+      interpretation: "Розрахунок дефіциту кута в градусах та відсотках відхилення від фізіологічної норми.",
+    ),
+  ];
+
+  void _openScaleDetail(ClinicalScale scale) {
+    if (scale.category == "Інструменти") {
+      _openGoniometryCalculator();
+      return;
+    }
+
+    final scoreController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 16, right: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Chip(
+                label: Text(scale.category, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                backgroundColor: Colors.indigo.shade600,
+              ),
+              const SizedBox(height: 5),
+              Text(scale.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
+              const Divider(),
+              const Text("📋 Опис:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(scale.description, style: const TextStyle(fontSize: 13)),
+              const SizedBox(height: 10),
+              const Text("🚀 Методика проведення:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(scale.instruction, style: const TextStyle(fontSize: 13)),
+              const SizedBox(height: 10),
+              const Text("🔍 Інтерпретація результатів:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
+                child: Text(scale.interpretation, style: const TextStyle(fontSize: 12, fontFamily: 'Courier')),
+              ),
+              const SizedBox(height: 15),
+              const Text("🔢 Фіксація балів:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: scoreController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: "Результат / бали", border: OutlineInputBorder()),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                    onPressed: () {
+                      if (scoreController.text.isNotEmpty) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Результат оцінки (${scoreController.text}) зафіксовано")),
+                        );
+                      }
+                    },
+                    child: const Text("Оцінити", style: TextStyle(color: Colors.white)),
+                  )
+                ],
+              ),
+              const SizedBox(height: 25),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openGoniometryCalculator() {
+    final normController = TextEditingController();
+    final factController = TextEditingController();
+    String resultString = "";
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 16, right: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("📐 Калькулятор гоніометрії (ROM)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
+              const Divider(),
+              const Text("Введіть фізіологічну анатомічну норму та фактичний кут руху пацієнта:", style: TextStyle(fontSize: 13)),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(child: TextField(controller: normController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Норма (°)", border: OutlineInputBorder()))),
+                  const SizedBox(width: 10),
+                  Expanded(child: TextField(controller: factController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Кут пацієнта (°)", border: OutlineInputBorder()))),
+                ],
+              ),
+              const SizedBox(height: 15),
+              if (resultString.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red.shade200)),
+                  child: Text(resultString, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 13)),
+                ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.grey), onPressed: () => Navigator.pop(context), child: const Text("Закрити", style: TextStyle(color: Colors.white)))),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                      onPressed: () {
+                        final double? norm = double.tryParse(normController.text);
+                        final double? fact = double.tryParse(factController.text);
+                        if (norm != null && fact != null && norm > 0) {
+                          final double deficitDeg = norm - fact;
+                          final double deficitPct = (deficitDeg / norm) * 100;
+                          setModalState(() {
+                            resultString = "Дефіцит амплітуди рухів:\n🔻 ${deficitDeg.toStringAsFixed(1)}° (${deficitPct.toStringAsFixed(1)}% від анатомічної норми)";
+                          });
+                        }
+                      },
+                      child: const Text("Розрахувати", style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 25),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredScales = _scales.where((s) {
+      final matchesCategory = _selectedCategory == "Всі" || s.category == _selectedCategory;
+      final matchesSearch = s.name.toLowerCase().contains(_searchQuery.toLowerCase()) || s.description.toLowerCase().contains(_searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Клінічні шкали"), backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: "Пошук шкали чи тесту", prefixIcon: Icon(Icons.search), border: OutlineInputBorder()),
+              onChanged: (val) => setState(() => _searchQuery = val),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 40,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final cat = _categories[index];
+                  final isSelected = _selectedCategory == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: ChoiceChip(
+                      label: Text(cat, style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 11)),
+                      selected: isSelected,
+                      selectedColor: Colors.indigo.shade600,
+                      backgroundColor: Colors.grey.shade200,
+                      onSelected: (bool selected) => setState(() => _selectedCategory = cat),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: filteredScales.isEmpty
+                  ? const Center(child: Text("Тестів не знайдено"))
+                  : ListView.builder(
+                      itemCount: filteredScales.length,
+                      itemBuilder: (context, index) {
+                        final scale = filteredScales[index];
+                        final isGonio = scale.category == "Інструменти";
+                        return Card(
+                          elevation: 1,
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: ListTile(
+                            leading: Icon(isGonio ? Icons.architecture : Icons.assignment_outlined, color: isGonio ? Colors.teal : Colors.indigo.shade400, size: 24),
+                            title: Text(scale.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            subtitle: Text(scale.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                            trailing: const Icon(Icons.play_circle_fill, color: Colors.indigo, size: 24),
+                            onTap: () => _openScaleDetail(scale),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 4. КОНСТРУКТОР SMART-ЦІЛЕЙ (ПРИВ'ЯЗАНИЙ)
 // ==========================================
 class EmbeddedSmartGoalsScreen extends StatefulWidget {
-  const EmbeddedSmartGoalsScreen({Key? key}) : super(key: key);
+  final List<PatientCard> patients;
+  final VoidCallback onGoalSaved;
+
+  const EmbeddedSmartGoalsScreen({Key? key, required this.patients, required this.onGoalSaved}) : super(key: key);
 
   @override
   State<EmbeddedSmartGoalsScreen> createState() => _EmbeddedSmartGoalsScreenState();
 }
 
 class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
+  PatientCard? _selectedPatient;
+
   final Map<String, TextEditingController> _controllers = {
-    "S": TextEditingController(),
-    "M": TextEditingController(),
-    "A": TextEditingController(),
-    "R": TextEditingController(),
-    "T": TextEditingController(),
+    "S": TextEditingController(), "M": TextEditingController(), "A": TextEditingController(), "R": TextEditingController(), "T": TextEditingController(),
   };
 
   final List<Map<String, String>> _fields = [
-    {"key": "S", "t": "S - Специфічна (Specific)", "h": "Яку саме функцію відновлюємо?"},
-    {"key": "M", "t": "M - Вимірювана (Measurable)", "h": "В яких одиницях (градуси, метри, бали)?"},
-    {"key": "A", "t": "A - Досяжна (Achievable)", "h": "Реалістичність з огляду на травму"},
-    {"key": "R", "t": "R - Релевантна (Relevant)", "h": "Важливість для повсякденного життя пацієнта"},
-    {"key": "T", "t": "T - Обмежена в часі (Time-bound)", "h": "Термін виконання (напр. 2 тижні)"},
+    {"key": "S", "t": "S - Специфічна (Specific)", "h": "Яку функцію/дію відновлюємо?"},
+    {"key": "M", "t": "M - Вимірювана (Measurable)", "h": "Показник в метрах, градусах або балах"},
+    {"key": "A", "t": "A - Досяжна (Achievable)", "h": "Реалістичність мети для пацієнта"},
+    {"key": "R", "t": "R - Релевантна (Relevant)", "h": "Важливість цілі для життєдіяльності"},
+    {"key": "T", "t": "T - Обмежена в часі (Time-bound)", "h": "Термін досягнення (наприклад: 2 тижні)"},
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.patients.isNotEmpty) {
+      _selectedPatient = widget.patients.first;
+    }
+  }
+
+  @override
   void dispose() {
-    for (var controller in _controllers.values) {
-      controller.dispose();
+    for (var c in _controllers.values) {
+      c.dispose();
     }
     super.dispose();
   }
@@ -931,34 +878,47 @@ class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Конструктор цілей SMART"),
-        backgroundColor: Colors.green.shade600,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text("Конструктор цілей SMART"), backgroundColor: Colors.green.shade600, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Постановка цілей реабілітації",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Text("Крок 1: Оберіть пацієнта для цілі", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(8), color: Colors.white),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<PatientCard>(
+                  value: _selectedPatient,
+                  isExpanded: true,
+                  hint: const Text("Виберіть карту пацієнта"),
+                  items: widget.patients.map((PatientCard p) {
+                    return DropdownMenuItem<PatientCard>(value: p, child: Text(p.fullName, style: const TextStyle(fontSize: 14)));
+                  }).toList(),
+                  onChanged: (PatientCard? val) => setState(() => _selectedPatient = val),
+                ),
+              ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
+            const Text("Крок 2: Формування критеріїв цілі", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
             Expanded(
               child: ListView.builder(
                 itemCount: _fields.length,
                 itemBuilder: (context, index) {
                   final f = _fields[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
                     child: TextField(
                       controller: _controllers[f["key"]],
                       decoration: InputDecoration(
-                        labelText: f["t"],
-                        hintText: f["h"],
+                        labelText: f["t"], hintText: f["h"],
+                        labelStyle: const TextStyle(fontSize: 12),
+                        hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade400),
                         border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
                   );
@@ -968,16 +928,30 @@ class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              height: 45,
+              height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade600),
                 onPressed: () {
-                  String finalGoal = _controllers.values.map((c) => c.text).where((text) => text.isNotEmpty).join(" | ");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(finalGoal.isNotEmpty ? "Ціль збережено!" : "Заповніть хоча б одне поле")),
-                  );
+                  if (_selectedPatient == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Спершу оберіть пацієнта")));
+                    return;
+                  }
+                  if (_controllers["S"]!.text.isEmpty || _controllers["T"]!.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Критерії (S) та (T) є обов'язковими")));
+                    return;
+                  }
+
+                  String goalText = "Ціль: ${_controllers["S"]!.text} "
+                      "(${_controllers["M"]!.text.isEmpty ? 'без індикатора' : _controllers["M"]!.text}). "
+                      "Термін: ${_controllers["T"]!.text}.";
+
+                  _selectedPatient!.smartGoals.add(goalText);
+                  widget.onGoalSaved();
+
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ціль додано до карти: ${_selectedPatient!.fullName}")));
+                  for (var c in _controllers.values) { c.clear(); }
                 },
-                child: const Text("Зберегти ціль", style: TextStyle(color: Colors.white)),
+                child: const Text("Зберегти ціль в карту пацієнта", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -988,78 +962,127 @@ class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
 }
 
 // ==========================================
-// 3. ВБУДОВАНИЙ ЕКРАН КЛАСИФІКАТОРА МКХ-10
+// 5. ДОВІДНИК МКХ-10 З ЛОГІКОЮ ЗАКРІПЛЕННЯ
 // ==========================================
 class EmbeddedIcdScreen extends StatefulWidget {
-  const EmbeddedIcdScreen({Key? key}) : super(key: key);
+  final List<PatientCard> patients;
+  final VoidCallback onIcdAssigned;
+
+  const EmbeddedIcdScreen({Key? key, required this.patients, required this.onIcdAssigned}) : super(key: key);
 
   @override
   State<EmbeddedIcdScreen> createState() => _EmbeddedIcdScreenState();
 }
 
 class _EmbeddedIcdScreenState extends State<EmbeddedIcdScreen> {
+  String _searchQuery = "";
+  PatientCard? _targetPatient;
+
   final List<Map<String, String>> _icdCodes = [
-    {"code": "M50", "name": "Ураження міжхребцевих дисків шийного відділу"},
-    {"code": "G80", "name": "Церебральний параліч (ДЦП)"},
-    {"code": "I69", "name": "Наслідки цереброваскулярних хвороб (Інсульт)"},
-    {"code": "M16", "name": "Коксартроз (артроз кульшового суглоба)"},
-    {"code": "S42", "name": "Перелом плечової кістки / суглоба"},
-    {"code": "T90", "name": "Наслідки травм голови"},
+    {"code": "I69.3", "name": "Наслідки ішемічного інсульту головного мозку"},
+    {"code": "G80.0", "name": "Спастичний церебральний параліч (ДЦП)"},
+    {"code": "M16.0", "name": "Первинний коксартроз двобічний"},
+    {"code": "M50.1", "name": "Ураження міжхребцевого диска шийного відділу з радикулопатією"},
+    {"code": "S42.2", "name": "Перелом верхнього кінця плечової кістки"},
+    {"code": "T90.5", "name": "Наслідки внутрішньочерепної травми"},
+    {"code": "S32.0", "name": "Перелом поперекового хребця L1"},
+    {"code": "G20", "name": "Хвороба Паркінсона"},
   ];
 
-  String _searchQuery = "";
+  @override
+  void initState() {
+    super.initState();
+    if (widget.patients.isNotEmpty) {
+      _targetPatient = widget.patients.first;
+    }
+  }
+
+  void _assignCode(String code) {
+    if (_targetPatient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Спершу виберіть або додайте пацієнта")));
+      return;
+    }
+
+    if (_targetPatient!.icdCodes.contains(code)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Код $code вже є у картці пацієнта!")));
+      return;
+    }
+
+    setState(() {
+      _targetPatient!.icdCodes.add(code);
+    });
+    widget.onIcdAssigned();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Код $code успішно закріплено за пацієнтом: ${_targetPatient!.fullName}")),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _icdCodes
-        .where((e) => e["code"]!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                      e["name"]!.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    final filtered = _icdCodes.where((e) {
+      return e["code"]!.toLowerCase().contains(_searchQuery.toLowerCase()) || e["name"]!.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Класифікатор МКХ-10 / МКФ"),
-        backgroundColor: Colors.amber.shade700,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text("Довідник МКХ-10"), backgroundColor: Colors.amber.shade700, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: "Пошук коду або діагнозу",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+            const Text("Оберіть пацієнта для призначення коду:", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(8), color: Colors.white),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<PatientCard>(
+                  value: _targetPatient,
+                  isExpanded: true,
+                  items: widget.patients.map((PatientCard p) {
+                    return DropdownMenuItem<PatientCard>(value: p, child: Text(p.fullName, style: const TextStyle(fontSize: 13)));
+                  }).toList(),
+                  onChanged: (val) => setState(() => _targetPatient = val),
+                ),
               ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              decoration: const InputDecoration(labelText: "Швидкий пошук за діагнозом чи кодом МКХ", prefixIcon: Icon(Icons.search), border: OutlineInputBorder()),
               onChanged: (val) => setState(() => _searchQuery = val),
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      leading: Chip(
-                        label: Text(filtered[index]["code"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        backgroundColor: Colors.amber.shade100,
-                      ),
-                      title: Text(filtered[index]["name"]!),
-                      trailing: const Icon(Icons.add_circle_outline, color: Colors.amber),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Код ${filtered[index]["code"]} вибрано")),
+              child: filtered.isEmpty
+                  ? const Center(child: Text("Кодів за запитом не знайдено"))
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final codeItem = filtered[index];
+                        return Card(
+                          child: ListTile(
+                            leading: Chip(label: Text(codeItem["code"]!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)), backgroundColor: Colors.amber.shade100),
+                            title: Text(codeItem["name"]!, style: const TextStyle(fontSize: 13)),
+                            trailing: const Icon(Icons.add_link, color: Colors.amber),
+                            onTap: () => _assignCode(codeItem["code"]!),
+                          ),
                         );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+// ==========================================
+// ЗАГЛУШКИ ДЛЯ НАСТУПНИХ СЕКЦІЙ
+// ==========================================
+class ExercisesCatalogView extends StatelessWidget {
+  const ExercisesCatalogView({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Вправи та ЛФК"), backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white));
 }
