@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import '../models.dart';
+import 'package:flutter/material.dart';
 
 class IrpGlobalScreen extends StatefulWidget {
   final List<Patient> patients;
