@@ -1,13 +1,11 @@
-// ==========================================
-// 1. МОДЕЛІ ДЛЯ ІРП ТА ПАЦІЄНТІВ
-// ==========================================
-
 class IrpPlan {
   String goalsSmart;
   String mfkCodes;
   String interventionPlan;
   String specialistName;
   String rehabilitationCycle;
+  int? plannedDays; // Додано
+  Map<int, List<CustomExercise>>? daysSchedule; // Додано
 
   IrpPlan({
     this.goalsSmart = '',
@@ -15,6 +13,8 @@ class IrpPlan {
     this.interventionPlan = '',
     this.specialistName = '',
     this.rehabilitationCycle = 'Первинний',
+    this.plannedDays = 3,
+    this.daysSchedule,
   });
 }
 
@@ -22,7 +22,10 @@ class Patient {
   final String id;
   final String name;
   final String age;
+  final String birthDate; // Додано
   final String diagnosis;
+  String diagnosisMkh10; // Додано
+  final String admissionDate; // Додано
   final IrpPlan irp;
   final List<PatientVisit> visits;
   final List<ScaleHistoryPoint> scaleHistory;
@@ -31,7 +34,10 @@ class Patient {
     required this.id,
     required this.name,
     required this.age,
+    required this.birthDate,
     required this.diagnosis,
+    required this.diagnosisMkh10,
+    required this.admissionDate,
     required this.irp,
     List<PatientVisit>? visits,
     List<ScaleHistoryPoint>? scaleHistory,
@@ -40,12 +46,16 @@ class Patient {
 }
 
 class PatientVisit {
-  final String date;
-  final List<CustomExercise> exercises;
+  final String id;
+  DateTime date; // Змінено на DateTime
+  String therapeuticNote;
+  Map<String, String>? testResults;
 
   PatientVisit({
+    required this.id,
     required this.date,
-    required this.exercises,
+    this.therapeuticNote = '',
+    this.testResults,
   });
 }
 
@@ -64,62 +74,11 @@ class CustomExercise {
 class ScaleHistoryPoint {
   final String date;
   final String scaleName;
-  final String score;
+  final String score; // Залишаємо як String, але в коді треба буде конвертувати в double
 
   ScaleHistoryPoint({
     required this.date,
     required this.scaleName,
     required this.score,
-  });
-}
-
-// ==========================================
-// 2. МОДЕЛІ ДЛЯ КАТАЛОГУ ВПРАВ (EXERCISES)
-// ==========================================
-
-enum ExerciseAgeGroup { all, adult, child, geriatric }
-enum ExerciseIntensity { low, medium, high }
-
-class Exercise {
-  final String id;
-  final String title;
-  final String category;
-  final String description;
-  final String indications;
-  final String contraindications;
-  final String dosage;
-  final List<String> executionSteps;
-  final ExerciseAgeGroup ageGroup;
-  final ExerciseIntensity intensity;
-
-  Exercise({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.description,
-    required this.indications,
-    required this.contraindications,
-    required this.dosage,
-    required this.executionSteps,
-    required this.ageGroup,
-    required this.intensity,
-  });
-}
-
-// ==========================================
-// 3. МОДЕЛІ ДЛЯ ГОНІОМЕТРІЇ (GONIOMETRY)
-// ==========================================
-
-class JointMovementNorm {
-  final String jointName;
-  final String movementType;
-  final int normalValue;
-  final String instruction;
-
-  JointMovementNorm({
-    required this.jointName,
-    required this.movementType,
-    required this.normalValue,
-    required this.instruction,
   });
 }
