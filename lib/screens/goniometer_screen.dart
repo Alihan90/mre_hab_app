@@ -1,9 +1,9 @@
 // lib/screens/goniometry_test_screen.dart
+import '../models.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:async';
 import 'dart:math' as math;
-import '../models.dart';
 
 class GoniometryInteractiveTestScreen extends StatefulWidget {
   final Function(String, String)? onSaveResult;
