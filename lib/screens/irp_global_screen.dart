@@ -23,6 +23,25 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeFirstPatient();
+  }
+
+  @override
+  void didUpdateWidget(covariant IrpGlobalScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Якщо список пацієнтів оновився ззовні, синхронізуємо стан
+    if (widget.patients.isNotEmpty) {
+      if (_selectedPatient == null || !widget.patients.contains(_selectedPatient)) {
+        _initializeFirstPatient();
+      }
+    } else {
+      setState(() {
+        _selectedPatient = null;
+      });
+    }
+  }
+
+  void _initializeFirstPatient() {
     if (widget.patients.isNotEmpty) {
       _loadPatientData(widget.patients.first);
     }
@@ -34,11 +53,16 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
     _mfkController.text = patient.irp.mfkCodes;
     _interventionController.text = patient.irp.interventionPlan;
     _specialistController.text = patient.irp.specialistName;
-    _rehabilitationCycle = patient.irp.rehabilitationCycle;
+    _rehabilitationCycle = patient.irp.rehabilitationCycle.isNotEmpty 
+        ? patient.irp.rehabilitationCycle 
+        : 'Первинний';
   }
 
   void _saveIrpData() {
     if (_selectedPatient != null) {
+      // Прибираємо фокус із текстових полів перед збереженням
+      FocusScope.of(context).unfocus();
+
       setState(() {
         _selectedPatient!.irp.goalsSmart = _goalsController.text.trim();
         _selectedPatient!.irp.mfkCodes = _mfkController.text.trim();
@@ -50,7 +74,11 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
       widget.onUpdate();
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ІРП для пацієнта ${_selectedPatient!.name} успішно збережено за протоколом МОЗ!')),
+        SnackBar(
+          content: Text('ІРП для пацієнта ${_selectedPatient!.name} успішно збережено за протоколом МОЗ!'),
+          backgroundColor: Colors.teal.shade800,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -79,7 +107,10 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Виберіть пацієнта для редагування ІРП:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text(
+                    'Виберіть пацієнта для редагування ІРП:', 
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -98,7 +129,7 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                         );
                       }).toList(),
                       onChanged: (Patient? newPatient) {
-                        if (newPatient != null) {
+                        if (newPatient != null && newPatient != _selectedPatient) {
                           setState(() {
                             _loadPatientData(newPatient);
                           });
@@ -109,17 +140,23 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   const Divider(height: 24, thickness: 1),
 
                   Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: Colors.teal.shade50, borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade50, 
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Методичні вимоги МОЗ України:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.teal)),
-                        SizedBox(height: 4),
+                        Text(
+                          'Методичні вимоги МОЗ України:', 
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.teal),
+                        ),
+                        SizedBox(height: 6),
                         Text(
                           '• SMART-ціль має містити часові рамки та чіткий критерій оцінки (наприклад, бали за шкалою або метри).\n'
                           '• Коди МКФ вносяться у форматі доменів (напр., b730 — сила м\'язів, d450 — ходьба) з визначенням кваліфікатора порушення від 0 до 4.',
-                          style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.3),
+                          style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.4),
                         ),
                       ],
                     ),
@@ -129,10 +166,12 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   TextField(
                     controller: _goalsController,
                     maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Реабілітаційні цілі (S.M.A.R.T. формат)',
                       hintText: 'Наприклад: Збільшити баланс за Бергом до 45 балів та забезпечити самостійне пересаджування до 20.07.2026.',
                       border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -140,67 +179,71 @@ class _IrpGlobalScreenState extends State<IrpGlobalScreen> {
                   TextField(
                     controller: _mfkController,
                     maxLines: null,
+                    textCapitalization: TextCapitalization.none,
                     decoration: const InputDecoration(
                       labelText: 'Функціональний діагноз за МКФ (коди та категорії)',
                       hintText: 'Наприклад: b730.2 помірне порушення сили м\'язів кінцівок, d410.1 легке порушення зміни положення тіла.',
                       border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  Row(
-                    children: [
-                      const Text('Реабілітаційний цикл:', style: TextStyle(fontWeight: FontWeight.w500)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _rehabilitationCycle,
-                          decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10)),
-                          items: ['Первинний', 'Повторний', 'Заключний'].map((String cycle) {
-                            return DropdownMenuItem(value: cycle, child: Text(cycle));
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _rehabilitationCycle = val);
-                          },
-                        ),
-                      ),
-                    ],
+                  DropdownButtonFormField<String>(
+                    value: _rehabilitationCycle,
+                    decoration: const InputDecoration(
+                      labelText: 'Реабілітаційний цикл',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                    ),
+                    items: ['Первинний', 'Повторний', 'Заключний'].map((String cycle) {
+                      return DropdownMenuItem(value: cycle, child: Text(cycle));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _rehabilitationCycle = val);
+                    },
                   ),
                   const SizedBox(height: 12),
 
                   TextField(
                     controller: _interventionController,
                     maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'План втручань та терапевтичних технік',
                       hintText: 'Наприклад: Вертикалізація 30 хв/день, механотерапія верхньої кінцівки, пропріоцептивне тренування балансу.',
                       border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
                     ),
                   ),
                   const SizedBox(height: 12),
 
                   TextField(
                     controller: _specialistController,
+                    textCapitalization: TextCapitalization.words,
                     decoration: const InputDecoration(
                       labelText: 'ПІБ Відповідального фізичного терапевта',
                       hintText: 'Наприклад: Петренко В.О.',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade700,
                       foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 52),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: _saveIrpData,
-                    icon: const Icon(Icons.gavel),
-                    label: const Text('Затвердити та зберегти ІРП пацієнта', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    icon: const Icon(Icons.check_circle_outline),
+                    label: const Text(
+                      'Затвердити та зберегти ІРП пацієнта', 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
