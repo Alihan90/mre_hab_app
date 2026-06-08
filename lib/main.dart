@@ -1,6 +1,8 @@
 // lib/main.dart
+import 'dart:convert'; // Потрібно для роботи з JSON
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Наше нове сховище
 
 // ==========================================
 // СТРУКТУРА ДАНИХ ДЛЯ МЕДИЧНОЇ КАРТИ ПАЦІЄНТА
@@ -12,7 +14,7 @@ class PatientCard {
   final String primaryDiagnosis;
   List<String> smartGoals; 
   List<String> icdCodes;   
-  List<String> assignedExercises; // Нове поле для Кроку 5
+  List<String> assignedExercises;
 
   PatientCard({
     required this.id,
@@ -23,6 +25,32 @@ class PatientCard {
     required this.icdCodes,
     required this.assignedExercises,
   });
+
+  // Перетворюємо об'єкт пацієнта в Map (карту), щоб зберегти в JSON
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'birthDate': birthDate,
+      'primaryDiagnosis': primaryDiagnosis,
+      'smartGoals': smartGoals,
+      'icdCodes': icdCodes,
+      'assignedExercises': assignedExercises,
+    };
+  }
+
+  // Створюємо об'єкт пацієнта з Map, який прочитали з JSON
+  factory PatientCard.fromMap(Map<String, dynamic> map) {
+    return PatientCard(
+      id: map['id'] ?? '',
+      fullName: map['fullName'] ?? '',
+      birthDate: map['birthDate'] ?? '',
+      primaryDiagnosis: map['primaryDiagnosis'] ?? '',
+      smartGoals: List<String>.from(map['smartGoals'] ?? []),
+      icdCodes: List<String>.from(map['icdCodes'] ?? []),
+      assignedExercises: List<String>.from(map['assignedExercises'] ?? []),
+    );
+  }
 }
 
 // ==========================================
@@ -89,30 +117,82 @@ class MainDashboardScreen extends StatefulWidget {
 }
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
-  // Централізований стан пацієнтів
-  final List<PatientCard> _globalPatients = [
-    PatientCard(
-      id: "1",
-      fullName: "Іваненко Петро Миколайович",
-      birthDate: "15.05.1978",
-      primaryDiagnosis: "Наслідки ішемічного інсульту, лівобічний геміпарез",
-      smartGoals: ["Ціль: Збільшити кут згинання у ліктьовому суглобі (до 90°). Термін: за 3 тижні."],
-      icdCodes: ["I69.3"],
-      assignedExercises: ["Дзеркальна терапія для кисті (15 хвилин, 2 рази на день.)"],
-    ),
-    PatientCard(
-      id: "2",
-      fullName: "Сидоренко Ольга Володимирівна",
-      birthDate: "22.11.1990",
-      primaryDiagnosis: "Компресійний перелом L1 хребця, стан після металоостеосинтезу",
-      smartGoals: ["Ціль: Ходьба без опори на відстань до 100м. Термін: за 14 днів."],
-      icdCodes: ["S32.0"],
-      assignedExercises: [],
-    ),
-  ];
+  // Список пацієнтів (початково порожній, дані завантажаться з пам'яті)
+  List<PatientCard> _globalPatients = [];
+  bool _isLoading = true; // Прапорець завантаження
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPatientsFromStorage(); // Завантажуємо при старті
+  }
+
+  // ФУНКЦІЯ ЗАВАНТАЖЕННЯ ДАНИХ ІЗ ПАМ'ЯТІ ТЕЛЕФОНУ
+  Future<void> _loadPatientsFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? patientsJson = prefs.getString('saved_patients');
+
+      if (patientsJson != null && patientsJson.isNotEmpty) {
+        final List<dynamic> decodedList = jsonDecode(patientsJson);
+        setState(() {
+          _globalPatients = decodedList.map((item) => PatientCard.fromMap(item)).toList();
+          _isLoading = false;
+        });
+      } else {
+        // Якщо додаток запущено вперше і пам'ять порожня — створюємо демо-пацієнтів
+        setState(() {
+          _globalPatients = [
+            PatientCard(
+              id: "1",
+              fullName: "Іваненко Петро Миколайович",
+              birthDate: "15.05.1978",
+              primaryDiagnosis: "Наслідки ішемічного інсульту, лівобічний геміпарез",
+              smartGoals: ["Ціль: Збільшити кут згинання у ліктьовому суглобі (до 90°). Термін: за 3 тижні."],
+              icdCodes: ["I69.3"],
+              assignedExercises: ["Дзеркальна терапія для кисті (15 хвилин, 2 рази на день.)"],
+            ),
+            PatientCard(
+              id: "2",
+              fullName: "Сидоренко Ольга Володимирівна",
+              birthDate: "22.11.1990",
+              primaryDiagnosis: "Компресійний перелом L1 хребця, стан після металоостеосинтезу",
+              smartGoals: ["Ціль: Ходьба без опори на відстань до 100м. Термін: за 14 днів."],
+              icdCodes: ["S32.0"],
+              assignedExercises: [],
+            ),
+          ];
+          _isLoading = false;
+        });
+        _savePatientsToStorage(); // Одразу запишемо їх у базу
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // ФУНКЦІЯ ЗБЕРЕЖЕННЯ ДАНИХ У ПАМ'ЯТЬ ТЕЛЕФОНУ
+  Future<void> _savePatientsToStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<Map<String, dynamic>> mappedList = _globalPatients.map((p) => p.toMap()).toList();
+    final String encodedData = jsonEncode(mappedList);
+    await prefs.setString('saved_patients', encodedData);
+  }
+
+  // Метод, який ми викликаємо щоразу, коли щось міняється
+  void _handleDataChange() {
+    setState(() {});
+    _savePatientsToStorage(); // Авто-збереження при будь-якій зміні
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Показуємо індикатор, поки вантажаться дані
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("MReHab — Робочий стіл", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -145,7 +225,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     color: Colors.blue.shade600,
                     destination: PatientsScreen(
                       patients: _globalPatients,
-                      onPatientsUpdated: () => setState(() {}),
+                      onPatientsUpdated: _handleDataChange,
                     ),
                   ),
                   _buildDashboardCard(
@@ -164,7 +244,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     color: Colors.green.shade600,
                     destination: EmbeddedSmartGoalsScreen(
                       patients: _globalPatients,
-                      onGoalSaved: () => setState(() {}),
+                      onGoalSaved: _handleDataChange,
                     ),
                   ),
                   _buildDashboardCard(
@@ -175,7 +255,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     color: Colors.amber.shade700,
                     destination: EmbeddedIcdScreen(
                       patients: _globalPatients,
-                      onIcdAssigned: () => setState(() {}),
+                      onIcdAssigned: _handleDataChange,
                     ),
                   ),
                   _buildDashboardCard(
@@ -186,7 +266,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     color: Colors.purple.shade600,
                     destination: ExercisesCatalogView(
                       patients: _globalPatients,
-                      onExercisesUpdated: () => setState(() {}),
+                      onExercisesUpdated: _handleDataChange,
                     ),
                   ),
                   _buildDashboardCard(
@@ -320,88 +400,6 @@ class _PatientsScreenState extends State<PatientsScreen> {
     );
   }
 
-  void _openPatientJournal(PatientCard patient) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text("Медична карта"),
-            backgroundColor: Colors.blue.shade700,
-            foregroundColor: Colors.white,
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ListView(
-              children: [
-                Card(
-                  color: Colors.blue.shade50,
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(patient.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                        const SizedBox(height: 5),
-                        Text("Дата народження: ${patient.birthDate}", style: const TextStyle(fontSize: 14)),
-                        const Divider(),
-                        const Text("Клінічний діагноз:", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(patient.primaryDiagnosis, style: TextStyle(color: Colors.grey.shade800)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                const Text("📌 Реабілітаційні цілі (SMART)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                patient.smartGoals.isEmpty
-                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Цілі відсутні. Сформуйте їх у Конструкторі SMART."))
-                    : Column(
-                        children: patient.smartGoals.map((goal) => Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          child: ListTile(
-                            leading: const Icon(Icons.track_changes, color: Colors.green),
-                            title: Text(goal, style: const TextStyle(fontSize: 13)),
-                          ),
-                        )).toList(),
-                      ),
-                const SizedBox(height: 20),
-                const Text("🗂️ Зареєстровані коди МКХ-10", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                patient.icdCodes.isEmpty
-                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Коди не закріплені. Виберіть коди в модулі МКХ-10."))
-                    : Wrap(
-                        spacing: 8,
-                        children: patient.icdCodes.map((code) => Chip(
-                          label: Text(code, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          backgroundColor: Colors.amber.shade100,
-                          avatar: const Icon(Icons.label, size: 16, color: Colors.amber),
-                        )).toList(),
-                      ),
-                const SizedBox(height: 20),
-                const Text("🏋️‍♂️ Призначена програма вправ (ЛФК)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                patient.assignedExercises.isEmpty
-                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Програма вправ ще не сформована."))
-                    : Column(
-                        children: patient.assignedExercises.map((ex) => Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          color: Colors.purple.shade50,
-                          child: ListTile(
-                            leading: const Icon(Icons.fitness_center, color: Colors.purple),
-                            title: Text(ex, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                          ),
-                        )).toList(),
-                      ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final filteredPatients = widget.patients
@@ -450,6 +448,106 @@ class _PatientsScreenState extends State<PatientsScreen> {
       ),
     );
   }
+
+  void _openPatientJournal(PatientCard patient) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text("Медична карта"),
+            backgroundColor: Colors.blue.shade700,
+            foregroundColor: Colors.white,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                Card(
+                  color: Colors.blue.shade50,
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(patient.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 5),
+                        Text("Дата народження: ${patient.birthDate}", style: const TextStyle(fontSize: 14)),
+                        const Divider(),
+                        const Text("Клінічний діагноз:", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(patient.primaryDiagnosis, style: TextStyle(color: Colors.grey.shade800)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                const Text("📌 Реабілітаційні цілі (SMART)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.smartGoals.isEmpty
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Цілі відсутні. Сформуйте їх у Конструкторі SMART."))
+                    : Column(
+                        children: patient.smartGoals.map((goal) => Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: ListTile(
+                            leading: const Icon(Icons.track_changes, color: Colors.green),
+                            title: Text(goal, style: const TextStyle(fontSize: 13)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.redAccent, size: 18),
+                              onPressed: () {
+                                setState(() { patient.smartGoals.remove(goal); });
+                                widget.onPatientsUpdated();
+                              },
+                            ),
+                          ),
+                        )).toList(),
+                      ),
+                const SizedBox(height: 20),
+                const Text("🗂️ Зареєстровані коди МКХ-10", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.icdCodes.isEmpty
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Коди не закріплені. Виберіть коди в модулі МКХ-10."))
+                    : Wrap(
+                        spacing: 8,
+                        children: patient.icdCodes.map((code) => Chip(
+                          label: Text(code, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          backgroundColor: Colors.amber.shade100,
+                          avatar: const Icon(Icons.label, size: 16, color: Colors.amber),
+                          onDeleted: () {
+                            setState(() { patient.icdCodes.remove(code); });
+                            widget.onPatientsUpdated();
+                          },
+                        )).toList(),
+                      ),
+                const SizedBox(height: 20),
+                const Text("🏋️‍♂️ Призначена програма вправ (ЛФК)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.assignedExercises.isEmpty
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Програма вправ ще не сформована."))
+                    : Column(
+                        children: patient.assignedExercises.map((ex) => Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: Colors.purple.shade50,
+                          child: ListTile(
+                            leading: const Icon(Icons.fitness_center, color: Colors.purple),
+                            title: Text(ex, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.redAccent, size: 18),
+                              onPressed: () {
+                                setState(() { patient.assignedExercises.remove(ex); });
+                                widget.onPatientsUpdated();
+                              },
+                            ),
+                          ),
+                        )).toList(),
+                      ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ==========================================
@@ -487,7 +585,7 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
       name: "Модифікована шкала Ренкіна (mRS)",
       category: "Неврологія (дорослі)",
       description: "Оцінка ступеня інвалідизазации та загальної незалежності пацієнта після судинних катастроф.",
-      instruction: "Шляхом клінічного опитування виявіть рівень обмеження повсякденної життєдіяльності.",
+      instruction: "Шляхом клінічного опитування виявіть уровень обмеження повсякденної життєдіяльності.",
       interpretation: "0: Немає симптомів\n1: Є симптомів, але без обмежень\n2: Легка інвалідність\n3: Помірна інвалідність\n4: Важка інвалідність\n5: Дуже важка (прикутий до ліжка)",
     ),
     ClinicalScale(
@@ -754,7 +852,7 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
                           final double deficitDeg = norm - fact;
                           final double deficitPct = (deficitDeg / norm) * 100;
                           setModalState(() {
-                            resultString = "Дефіцит амплітуди рухів:\n🔻 ${deficitDeg.toStringAsFixed(1)}° (${deficitPct.toStringAsFixed(1)}% від анатомічної норми)";
+                            resultString = "Дефіциat амплітуди рухів:\n🔻 ${deficitDeg.toStringAsFixed(1)}° (${deficitPct.toStringAsFixed(1)}% від анатомічної норми)";
                           });
                         }
                       },
@@ -875,12 +973,6 @@ class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
     if (widget.patients.isNotEmpty) {
       _selectedPatient = widget.patients.first;
     }
-  }
-
-  @override
-  void dispose() {
-    for (var c in _controllers.values) { c.dispose(); }
-    super.dispose();
   }
 
   @override
