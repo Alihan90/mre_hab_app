@@ -368,13 +368,13 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                           decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(6)),
                           child: FractionallySizedBox(
                             alignment: Alignment.centerLeft,
-                            widthFactor: (patient.scaleHistory.last.score / 100).clamp(0.1, 1.0),
+                            widthFactor: ((double.tryParse(patient.scaleHistory.last.score) ?? 0.0) / 100).clamp(0.1, 1.0),
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(colors: [Colors.blue, Colors.green.shade400]),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Center(child: Text('${patient.scaleHistory.last.score.toInt()}% Функціоналу', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))),
+                              child: Center(child: Text('${(double.tryParse(patient.scaleHistory.last.score) ?? 0.0).toInt()}% Функціоналу', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))),
                             ),
                           ),
                         ),
