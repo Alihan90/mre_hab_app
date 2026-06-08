@@ -1,8 +1,8 @@
 // lib/main.dart
-import 'package:amre_hab_app/screens/exercises_catalog_view.dart';
 import 'package:flutter/material.dart';
 import 'screens/patients_screen.dart';
 import 'screens/scales_catalog_screen.dart';
+import 'screens/exercises_catalog_view.dart'; // Переконайтеся, що шлях та назва класу збігаються
 
 void main() {
   runApp(const RehabilitationApp());
@@ -21,10 +21,10 @@ class RehabilitationApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey.shade100,
       ),
-      // ВСТАВЛЯЄМО ОЦІ РЯДКИ ДЛЯ ПІДТРИМКИ УКРАЇНСЬКОЇ КЛАВІАТУРИ:
+      // Підтримка української розкладки клавіатури
       supportedLocales: const [
-        Locale('uk', 'UA'), // Українська розкладка
-        Locale('en', 'US'), // Англійська розкладка
+        Locale('uk', 'UA'),
+        Locale('en', 'US'),
       ],
       home: const MainDashboardScreen(),
     );
@@ -54,7 +54,6 @@ class MainDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             const SizedBox(height: 4),
             Text(
               "Оберіть необхідний клінічний інструмент:",
@@ -68,7 +67,6 @@ class MainDashboardScreen extends StatelessWidget {
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
                 children: [
-                  // 1. Пацієнти
                   _buildDashboardCard(
                     context,
                     title: "Пацієнти",
@@ -77,8 +75,6 @@ class MainDashboardScreen extends StatelessWidget {
                     color: Colors.blue.shade600,
                     destination: const PatientsScreen(),
                   ),
-
-                  // 2. Клінічні шкали
                   _buildDashboardCard(
                     context,
                     title: "Клінічні шкали",
@@ -87,8 +83,6 @@ class MainDashboardScreen extends StatelessWidget {
                     color: Colors.indigo.shade600,
                     destination: const ScalesCatalogScreen(),
                   ),
-
-                  // 3. Смарт конструктор цілей
                   _buildDashboardCard(
                     context,
                     title: "Конструктор цілей",
@@ -97,8 +91,6 @@ class MainDashboardScreen extends StatelessWidget {
                     color: Colors.green.shade600,
                     destination: const EmbeddedSmartGoalsScreen(),
                   ),
-
-                  // 4. Класифікатор МКХ-10
                   _buildDashboardCard(
                     context,
                     title: "МКХ-10 / МКФ",
@@ -107,18 +99,14 @@ class MainDashboardScreen extends StatelessWidget {
                     color: Colors.amber.shade700,
                     destination: const EmbeddedIcdScreen(),
                   ),
-
-                  // 5. Вправи та ЛФК
-                 _buildDashboardCard(
-  context,
-  title: "Вправи та ЛФК",
-  subtitle: "Протоколи занять",
-  icon: Icons.fitness_center,
-  color: Colors.purple.shade600,
-  destination: ExercisesCatalogView(), // Тепер плитка відкриватиме вправи!
-),
-
-                  // 6. Налаштування
+                  _buildDashboardCard(
+                    context,
+                    title: "Вправи та ЛФК",
+                    subtitle: "Протоколи занять",
+                    icon: Icons.fitness_center,
+                    color: Colors.purple.shade600,
+                    destination: const ExercisesCatalogView(),
+                  ),
                   _buildDashboardCard(
                     context,
                     title: "Налаштування",
@@ -182,10 +170,41 @@ class MainDashboardScreen extends StatelessWidget {
 }
 
 // ==========================================
-// 2. ВБУДОВАНИЙ ЕКРАН КОНСТРУКТОРА ЦІЛЕЙ SMART
+// 2. ВБУДОВАНИЙ ЕКРАН КОНСТРУКТОРА ЦІЛЕЙ SMART (ВИПРАВЛЕНО)
 // ==========================================
-class EmbeddedSmartGoalsScreen extends StatelessWidget {
+class EmbeddedSmartGoalsScreen extends StatefulWidget {
   const EmbeddedSmartGoalsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<EmbeddedSmartGoalsScreen> createState() => _EmbeddedSmartGoalsScreenState();
+}
+
+class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
+  // Створюємо карту контролерів для збереження введеного тексту
+  final Map<String, TextEditingController> _controllers = {
+    "S": TextEditingController(),
+    "M": TextEditingController(),
+    "A": TextEditingController(),
+    "R": TextEditingController(),
+    "T": TextEditingController(),
+  };
+
+  final List<Map<String, String>> _fields = [
+    {"key": "S", "t": "S - Специфічна (Specific)", "h": "Яку саме функцію відновлюємо?"},
+    {"key": "M", "t": "M - Вимірювана (Measurable)", "h": "В яких одиницях (градуси, метри, бали)?"},
+    {"key": "A", "t": "A - Досяжна (Achievable)", "h": "Реалістичність з огляду на травму"},
+    {"key": "R", "t": "R - Релевантна (Relevant)", "h": "Важливість для повсякденного життя пацієнта"},
+    {"key": "T", "t": "T - Обмежена в часі (Time-bound)", "h": "Термін виконання (напр. 2 тижні)"},
+  ];
+
+  @override
+  void dispose() {
+    // Обов'язково очищуємо пам'ять від контролерів
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,16 +225,34 @@ class EmbeddedSmartGoalsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView(
-                children: _buildSmartFields(),
+              child: ListView.builder(
+                itemCount: _fields.length,
+                itemBuilder: (context, index) {
+                  final f = _fields[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextField(
+                      controller: _controllers[f["key"]],
+                      decoration: InputDecoration(
+                        labelText: f["t"],
+                        hintText: f["h"],
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               height: 45,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade600),
                 onPressed: () {
+                  // Тут тепер можна зібрати реальний текст
+                  String finalGoal = _controllers.values.map((c) => c.text).join(" | ");
+                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Ціль збережено в протокол пацієнта")),
                   );
@@ -227,27 +264,6 @@ class EmbeddedSmartGoalsScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  List<Widget> _buildSmartFields() {
-    final fields = [
-      {"t": "S - Специфічна (Specific)", "h": "Яку саме функцію відновлюємо?"},
-      {"t": "M - Вимірювана (Measurable)", "h": "В яких одиницях (градуси, метри, бали)?"},
-      {"t": "A - Досяжна (Achievable)", "h": "Реалістичність з огляду на травму"},
-      {"t": "R - Релевантна (Relevant)", "h": "Важливість для повсякденного життя пацієнта"},
-      {"t": "T - Обмежена в часі (Time-bound)", "h": "Термін виконання (напр. 2 тижні)"},
-    ];
-
-    return fields.map((f) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextField(
-        decoration: InputDecoration(
-          labelText: f["t"],
-          hintText: f["h"],
-          border: const OutlineInputBorder(),
-        ),
-      ),
-    )).toList();
   }
 }
 
