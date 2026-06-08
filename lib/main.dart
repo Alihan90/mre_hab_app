@@ -12,6 +12,7 @@ class PatientCard {
   final String primaryDiagnosis;
   List<String> smartGoals; 
   List<String> icdCodes;   
+  List<String> assignedExercises; // Нове поле для Кроку 5
 
   PatientCard({
     required this.id,
@@ -20,6 +21,7 @@ class PatientCard {
     required this.primaryDiagnosis,
     required this.smartGoals,
     required this.icdCodes,
+    required this.assignedExercises,
   });
 }
 
@@ -77,7 +79,7 @@ class RehabilitationApp extends StatelessWidget {
 }
 
 // ==========================================
-// 1. РОБОЧИЙ СТІЛ (МЕНЮ НА 6 ПЛИТОК)
+// 1. РОБОЧИЙ СТІЛ (ГОЛОВНЕ МЕНЮ)
 // ==========================================
 class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({Key? key}) : super(key: key);
@@ -87,7 +89,7 @@ class MainDashboardScreen extends StatefulWidget {
 }
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
-  // Централізований глобальний стан у пам'яті програми
+  // Централізований стан пацієнтів
   final List<PatientCard> _globalPatients = [
     PatientCard(
       id: "1",
@@ -96,6 +98,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       primaryDiagnosis: "Наслідки ішемічного інсульту, лівобічний геміпарез",
       smartGoals: ["Ціль: Збільшити кут згинання у ліктьовому суглобі (до 90°). Термін: за 3 тижні."],
       icdCodes: ["I69.3"],
+      assignedExercises: ["Дзеркальна терапія для кисті (15 хвилин, 2 рази на день.)"],
     ),
     PatientCard(
       id: "2",
@@ -104,6 +107,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       primaryDiagnosis: "Компресійний перелом L1 хребця, стан після металоостеосинтезу",
       smartGoals: ["Ціль: Ходьба без опори на відстань до 100м. Термін: за 14 днів."],
       icdCodes: ["S32.0"],
+      assignedExercises: [],
     ),
   ];
 
@@ -180,7 +184,10 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     subtitle: "Протоколи занять",
                     icon: Icons.fitness_center,
                     color: Colors.purple.shade600,
-                    destination: const ExercisesCatalogView(),
+                    destination: ExercisesCatalogView(
+                      patients: _globalPatients,
+                      onExercisesUpdated: () => setState(() {}),
+                    ),
                   ),
                   _buildDashboardCard(
                     context,
@@ -299,6 +306,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                     primaryDiagnosis: diagnosisController.text.isEmpty ? "Діагноз відсутній" : diagnosisController.text,
                     smartGoals: [],
                     icdCodes: [],
+                    assignedExercises: [],
                   ));
                 });
                 widget.onPatientsUpdated();
@@ -371,6 +379,21 @@ class _PatientsScreenState extends State<PatientsScreen> {
                           avatar: const Icon(Icons.label, size: 16, color: Colors.amber),
                         )).toList(),
                       ),
+                const SizedBox(height: 20),
+                const Text("🏋️‍♂️ Призначена програма вправ (ЛФК)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                patient.assignedExercises.isEmpty
+                    ? const Padding(padding: EdgeInsets.all(8.0), child: Text("Програма вправ ще не сформована."))
+                    : Column(
+                        children: patient.assignedExercises.map((ex) => Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: Colors.purple.shade50,
+                          child: ListTile(
+                            leading: const Icon(Icons.fitness_center, color: Colors.purple),
+                            title: Text(ex, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                          ),
+                        )).toList(),
+                      ),
               ],
             ),
           ),
@@ -430,7 +453,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
 }
 
 // ==========================================
-// 3. ПОВНИЙ КАТАЛОГ 20 КЛІНІЧНИХ ШКАЛ + ГОНІОМЕТРІЯ
+// 3. ПОВНИЙ КАТАЛОГ ШКАЛ ТА ГОНІОМЕТРІЯ
 // ==========================================
 class ScalesCatalogScreen extends StatefulWidget {
   const ScalesCatalogScreen({Key? key}) : super(key: key);
@@ -446,7 +469,6 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
   final List<String> _categories = ["Всі", "Неврологія (дорослі)", "Ортопедія та Травматологія", "Кардіо-респіраторна", "Загальнофункциональні", "Pediatria (Дитячі вікові)", "Інструменти"];
 
   final List<ClinicalScale> _scales = [
-    // === НЕВРОЛОГІЯ (ДОРОСЛІ) ===
     ClinicalScale(
       name: "Модифікована шкала спастичності Ашворт (MAS)",
       category: "Неврологія (дорослі)",
@@ -464,158 +486,148 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
     ClinicalScale(
       name: "Модифікована шкала Ренкіна (mRS)",
       category: "Неврологія (дорослі)",
-      description: "Оцінка ступеня інвалідизації та загальної незалежності пацієнта після судинних катастроф.",
+      description: "Оцінка ступеня інвалідизазации та загальної незалежності пацієнта після судинних катастроф.",
       instruction: "Шляхом клінічного опитування виявіть рівень обмеження повсякденної життєдіяльності.",
-      interpretation: "0: Немає симптомів\n1: Є симптомів, але без обмежень\n2: Легка інвалідність\n3: Помірна інвалідність (ходить сам)\n4: Важка інвалідність (не ходить без сторонньої допомоги)\n5: Дуже важка (прикутий до ліжка)",
+      interpretation: "0: Немає симптомів\n1: Є симптомів, але без обмежень\n2: Легка інвалідність\n3: Помірна інвалідність\n4: Важка інвалідність\n5: Дуже важка (прикутий до ліжка)",
     ),
     ClinicalScale(
       name: "Тест оцінки функції руки Френчай (Frenchay Arm Test)",
       category: "Неврологія (дорослі)",
       description: "Оцінка проксимальної та дистальної рухової функції паретичної верхньої кінцівки.",
-      instruction: "Запропонуйте виконати 5 побутових завдань (стабілізувати лінійку, взяти склянку, піднести руку до голови тощо). Кожен успіх — 1 бал.",
+      instruction: "Запропонуйте виконати 5 побутових завдань. Кожен успіх — 1 бал.",
       interpretation: "0 балів: Рука повністю нефункциональна\n5 балів: Повна збережена функція руки",
     ),
     ClinicalScale(
       name: "Шкала коми Глазго (GCS)",
       category: "Неврологія (дорослі)",
-      description: "Оцінка ступеня пригнічення свідомості та глибини коми (наприклад, при ЧМТ).",
+      description: "Оцінка ступеня пригнічення свідомості та глибини коми.",
       instruction: "Сумуйте бали за трьома тестами: розплющування очей (1-4), мовна реакція (1-5), рухова реакція (1-6).",
-      interpretation: "15 балів: Ясна свідомість\n13-14 балів: Оглушення\n9-12 балів: Сопор\n3-8 балів: Кома (8 і менше — критичний стан)",
+      interpretation: "15 балів: Ясна свідомість\n13-14 балів: Оглушення\n9-12 балів: Сопор\n3-8 балів: Кома",
     ),
-
-    // === ОРТОПЕДІЯ ТА ТРАВМАТОЛОГІЯ ===
     ClinicalScale(
       name: "Індекс життєдіяльності Освестрі (ODI)",
       category: "Ортопедія та Травматологія",
-      description: "Оцінка впливу больового синдрому в нижній частині спини (попереку) на повсякденне життя.",
-      instruction: "Оцініть 10 секцій життєдіяльності (біль, сон, ходьба, стояння, соціальне життя) від 0 до 5 балів.",
-      interpretation: "0-20%: Мінімальне обмеження функцій\n21-40%: Помірне обмеження\n41-60%: Важке обмеження\n61-80%: Критичне порушення (інвалідність)\n81-100%: Повна залежність / симуляція",
+      description: "Оцінка впливу больового синдрому в попереку на повсякденне життя.",
+      instruction: "Оцініть 10 секцій життєдіяльності від 0 до 5 балів.",
+      interpretation: "0-20%: Мінімальне обмеження\n21-40%: Помірне\n41-60%: Важке\n61-80%: Критичне\n81-100%: Повна залежність",
     ),
     ClinicalScale(
       name: "Візуально-аналогова шкала болю (VAS / ЧРШ)",
       category: "Ортопедія та Травматологія",
       description: "Суб'єктивний метод експрес-оцінки інтенсивності болю пацієнтом.",
-      instruction: "Запропонуйте пацієнту обрати цифрове значення від 0 (немає болю) до 10 (нестерпний критичний біль).",
-      interpretation: "1-3 бали: Слабкий біль\n4-6 балів: Помірний біль\n7-10 балів: Сильний/критичний біль",
+      instruction: "Запропонуйте пацієнту обрати цифрове значення від 0 до 10.",
+      interpretation: "1-3 бали: Слабкий біль\n4-6 балів: Помірний біль\n7-10 балів: Сильний біль",
     ),
     ClinicalScale(
       name: "Мануальне м'язове тестування (MMT за Ловеттом)",
       category: "Ортопедія та Травматологія",
       description: "Оцінка сили та витривалості окремих м'язових груп за 5-бальною системою.",
-      instruction: "Протестуйте ізольований рух м'яза проти сили тяжіння та проти ручного супротиву терапевта.",
-      interpretation: "0: Скорочення немає\n1: «Слід» скорочення (пальпується)\n2: Рух у повній амплітуді БЕЗ сили тяжіння\n3: Рух проти сили тяжіння\n4: Рух проти сили тяжіння та помірного опору\n5: Норма",
+      instruction: "Протестуйте рух м'яза проти сили тяжіння та проти ручного супротиву терапевта.",
+      interpretation: "0: Скорочення немає\n1: Слід скорочення\n2: Рух БЕЗ сили тяжіння\n3: Рух проти сили тяжіння\n4: Рух проти опору\n5: Норма",
     ),
-
-    // === КАРДІО-РЕСПІРАТОРНА ===
     ClinicalScale(
       name: "Тест 6-хвилинної ходьби (6MWT)",
       category: "Кардіо-респіраторна",
       description: "Оцінка толерантності до фізичних навантажень та кардіореспіраторного статусу.",
-      instruction: "Виміряйте максимальну відстань (у метрах), яку пацієнт здатний пройти по прямій за 6 хвилин у комфортному темпі.",
-      interpretation: "Результат оцінюється індивідуально за віковими таблицями та у динаміці проведення терапії.",
+      instruction: "Виміряйте максимальну відстань (у метрах), яку пацієнт здатний пройти за 6 хвилин.",
+      interpretation: "Результат оцінюється індивідуально за віковими таблицями та у динаміці.",
     ),
     ClinicalScale(
       name: "Борг Шкала Сприйняття Навантаження (RPE Borg Scale)",
       category: "Кардіо-респіраторна",
-      description: "Суб'єктивна оцінка фізичного напруження, втоми та задишки під час занять ЛФК.",
-      instruction: "Пацієнт оцінює свою втому безпосередньо під час навантаження за шкалою від 6 (спокій) до 20 (максимум).",
-      interpretation: "6-11: Легке навантаження\n12-14: Помірний рівень (оптимальна цільова зона для кардіо-реабілітації)\n15-18: Важке навантаження\n19-20: Граничне навантаження",
+      description: "Суб'єктивная оцінка фізичного напруження та задишки під час занять ЛФК.",
+      instruction: "Пацієнт оцінює свою втому під час навантаження від 6 до 20.",
+      interpretation: "6-11: Легке навантаження\n12-14: Помірний рівень (цільова зона кардіо-реабілітації)\n15-18: Важке навантаження\n19-20: Максимум",
     ),
     ClinicalScale(
       name: "Індекс задишки за шкалою MRC (Dyspnea Scale)",
       category: "Кардіо-респіраторна",
-      description: "Оцінка ступеня задишки при хронічних легеневих або серцево-судинних захворюваннях.",
+      description: "Оцінка ступеня задишки при хронічних легеневих або серцевих патологіях.",
       instruction: "Опитайте пацієнта про побутові умови виникнення відчуття нестачі повітря.",
-      interpretation: "Грейд 0: Тільки при сильному навантаженні\nГрейд 1: При швидкій ходьбі або підйомі під гору\nГрейд 2: Через задишку ходить повільніше за однолітків\nГрейд 3: Зупиняється через задишку після ходьби на 100 метрів\nГрейд 4: Задишка заважає виходити з дому чи одягатися",
+      interpretation: "Грейд 0: При сильному навантаженні\nГрейд 1: При швидкій ходьбі\nГрейд 2: Ходить повільніше за однолітків\nГрейд 3: Зупиняється після 100 метрів\nГрейд 4: Задишка при одяганні",
     ),
-
-    // === ЗАГАЛЬНОФУНКЦІОНАЛЬНІ ===
     ClinicalScale(
       name: "Індекс активності повсякденного життя Бартел (Barthel Index)",
       category: "Загальнофункциональні",
       description: "Клінічний стандарт оцінки базової незалежності та самообслуговування пацієнта.",
-      instruction: "Оцініть 10 пунктів щоденної активності (харчування, особиста гігієна, переміщення, туалет тощо).",
+      instruction: "Оцініть 10 пунктів щоденної активності.",
       interpretation: "0-20 б: Повна залежність\n21-60 б: Тяжка залежність\n61-90 б: Помірна залежність\n91-100 б: Повна функціональна незалежність",
     ),
     ClinicalScale(
       name: "Шкала рівноваги Берга (Berg Balance Scale)",
       category: "Загальнофункциональні",
-      description: "Комплексний тест статичної та динамічної рівноваги, визначення ризику падінь пацієнта.",
-      instruction: "Попросіть виконати 14 функціональних рухових завдань (стояння, вставання, повороти). Оцінка від 0 до 4 кожне.",
-      interpretation: "0-20 балів: Високий ризик падінь\n21-40 балів: Середній ризик падінь\n41-56 балів: Низький ризик, безпечна самостійна ходьба",
+      description: "Комплексний тест статичної та динамічної рівноваги, визначення ризику падінь.",
+      instruction: "Попросіть виконати 14 рухових завдань. Оцінка від 0 до 4 кожне.",
+      interpretation: "0-20 балів: Високий ризик падінь\n21-40 балів: Середній ризик падінь\n41-56 балів: Низький ризик",
     ),
     ClinicalScale(
       name: "Індекс мобільності Рівермід (RMI)",
       category: "Загальнофункциональні",
       description: "Скринінгова оцінка рівня мобільності від базових поворотів у ліжку до бігу.",
-      instruction: "Оцініть 15 дій (14 шляхом опитування, 1 — прямим спостереженням стояння). За кожне «Так» — 1 бал.",
-      interpretation: "0 балів: Повна нерухомість\n15 балів: Максимально можлива функціональна мобільність пацієнта",
+      instruction: "Оцініть 15 дій дії. За кожне «Так» — 1 бал.",
+      interpretation: "0 балів: Повна нерухомість\n15 балів: Максимальна мобільність",
     ),
     ClinicalScale(
       name: "Тест «Встань та йди» (Timed Up and Go - TUG)",
       category: "Загальнофункциональні",
-      description: "Швидкий функціональний тест для оцінки динамічного балансу та швидкості переміщення.",
-      instruction: "Засічіть час (у сек), за який пацієнт встане зі стільця, пройде 3 метри, розвернеться і сяде назад.",
-      interpretation: "< 10 сек: Повна норма мобільності\n11-20 сек: Початкові незначні порушення\n> 20 сек: Виражені порушення балансу, високий ризик падінь",
+      description: "Швидкий функціональний тест для оцінки динамічного балансу.",
+      instruction: "Засічіть час, за який пацієнт встане зі стільця, пройде 3 метри, розвернеться і сяде назад.",
+      interpretation: "< 10 сек: Норма\n11-20 сек: Початкові порушення\n> 20 сек: Виражені порушення, високий ризик падінь",
     ),
     ClinicalScale(
       name: "Тест кубиків у коробці (Box and Block Test)",
       category: "Загальнофункциональні",
-      description: "Оцінка грубої мануальної спритності, координації рухів та швидкості рук.",
-      instruction: "Підрахуйте кількість дерев'яних кубиків, перенесених по одному через перегородку коробки за 60 секунд.",
-      interpretation: "Отримані показники порівнюють із віковими нормами та симетричною (здоровою) кінцівкою.",
+      description: "Оцінка грубої мануальної спритності та координації рухів.",
+      instruction: "Підрахуйте кількість кубиків, перенесених по одному через перегородку за 60 секунд.",
+      interpretation: "Показники порівнюють із віковими нормами.",
     ),
     ClinicalScale(
       name: "Функціональні категорії ходьби (FAC)",
       category: "Загальнофункциональні",
-      description: "Класифікація рівня незалежності пацієнта під час ходьби та ступеня потреби у страховці.",
-      instruction: "Визначте ступінь участі рук терапевта при страховці ходьби пацієнта на відрізку 3 метрів.",
-      interpretation: "0: Не ходить\n1-2: Потрібна безперервна фізична підтримка (1 або 2 осіб)\n3: Потрібен лише вербальний нагляд або усна команда\n4-5: Самостійна ходьба по рівній або будь-якій поверхні",
+      description: "Класифікація рівня незалежності пацієнта під час ходьби.",
+      instruction: "Визначте ступінь участі рук терапевта при страховці ходьби пацієнта на 3 метрах.",
+      interpretation: "0: Не ходить\n1-2: Потрібна безперервна фізична підтримка\n3: Потрібен лише вербальний нагляд\n4-5: Самостійна ходьба",
     ),
     ClinicalScale(
       name: "Динамічний індекс ходьби (DGI)",
       category: "Загальнофункциональні",
-      description: "Дослідження здатності пацієнта адаптувати ходьбу під складні змінні зовнішні умови.",
-      instruction: "Оцініть 8 завдань (зміна темпу, ходьба з поворотами голови, обходження перешкод, сходи).",
-      interpretation: "< 19 балів із 24: Висока ймовірність падінь під час локомоції",
+      description: "Дослідження здатності пацієнта адаптувати ходьбу під складні умови.",
+      instruction: "Оцініть 8 завдань (зміна темпу, повороти голови, перешкоди, сходи).",
+      interpretation: "< 19 балів із 24: Висока ймовірність падінь",
     ),
-
-    // === ПЕДІАТРІЯ ===
     ClinicalScale(
       name: "Велика моторна функція (GMFM-88 / GMFM-66)",
       category: "Pediatria (Дитячі вікові)",
       description: "Стандартизований тест кількісної оцінки змін великої моторики у дітей з ДЦП.",
-      instruction: "Проведіть тестування за 5 функціональними блоками: від положення лежачи до бігу та стрибків.",
-      interpretation: "Розраховується загальний відсотковий показник виконання завдань відповідно до рівнів клінічної класифікації GMFCS.",
+      instruction: "Проведіть тестування за 5 функціональними блоками: від лежання до бігу.",
+      interpretation: "Розраховується відсотковий показник виконання завдань.",
     ),
     ClinicalScale(
       name: "Шкала оцінки болю у дітей FLACC",
       category: "Pediatria (Дитячі вікові)",
-      description: "Поведінкова шкала оцінки інтенсивності болю у дітей (від 2 міс до 7 років) або невербальних пацієнтів.",
-      instruction: "Спостерігайте за пацієнтом 1-5 хв. Оцініть обличчя, ноги, активність, крик, втішання від 0 до 2 балів кожне.",
-      interpretation: "0 б: Комфорт / спокій\n1-3 б: Легкий дискомфорт\n4-6 б: Помірний больовий синдром\n7-10 б: Виражений сильний біль / критичний стрес",
+      description: "Поведінкова шкала оцінки інтенсивності болю у дітей (від 2 міс до 7 років).",
+      instruction: "Спостерігайте 1-5 хв. Оцініть обличчя, ноги, активність, крик, втішання від 0 до 2 балів.",
+      interpretation: "0 б: Спокій\n1-3 б: Легкий дискомфорт\n4-6 б: Помірний біль\n7-10 б: Сильний біль",
     ),
     ClinicalScale(
       name: "Шкала моторного розвитку немовлят Альберти (AIMS)",
       category: "Pediatria (Дитячі вікові)",
-      description: "Оцінка моторного дозрівання малюків від народження до моменту самостійної ходьби (0-18 місяців).",
-      instruction: "Спостерігайте за спонтанною активністю дитини у 4 базових положеннях: на животі, на спині, сидячи та стоячи.",
-      interpretation: "Сума балів наноситься на перцентильний графік. Показник нижче 5-го перцентиля свідчить про затримку розвитку.",
+      description: "Оцінка моторного дозрівання малюків від народження до самостійної ходьби (0-18 місяців).",
+      instruction: "Спостерігайте за активністю дитини у 4 положеннях: на животі, на спині, сидячи та стоячи.",
+      interpretation: "Показник нижче 5-го перцентиля свідчить про затримку розвитку.",
     ),
     ClinicalScale(
       name: "Тест розвитку зорово-моторної інтеграції Ерхардта (EDVA)",
       category: "Pediatria (Дитячі вікові)",
-      description: "Оцінка специфічних компонентів рухів рук та зорово-моторної координації у дітей із порушеннями.",
-      instruction: "Перевірте мимовільні та довільні реакції: фіксація погляду, простежування предмета, захоплення та маніпуляції.",
-      interpretation: "Визначається відповідність поточної рухової функції верхньої кінцівки паспортному віку дитини.",
+      description: "Оцінка специфічних компонентів рухів рук та зорово-моторної координації у дітей.",
+      instruction: "Перевірте мимовільні та довільні реакції: фіксація погляду, простежування, захоплення.",
+      interpretation: "Визначається відповідність поточної рухової функції паспортному віку дитини.",
     ),
-
-    // === ІНСТРУМЕНТИ ===
     ClinicalScale(
       name: "📐 Інструмент: Гоніометрія (Суглобовий статус за ROM)",
       category: "Інструменти",
       description: "Калькулятор дефіциту амплітуди активних та пасивних рухів у суглобах кінцівок.",
-      instruction: "Введіть стандартну анатомічну норму для руху та фактичний показник кута, отриманий механічним гоніометром.",
+      instruction: "Введіть стандартну анатомічну норму для руху та фактичний показник кута.",
       interpretation: "Розрахунок дефіциту кута в градусах та відсотках відхилення від фізіологічної норми.",
     ),
   ];
@@ -712,8 +724,6 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
             children: [
               const Text("📐 Калькулятор гоніометрії (ROM)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
               const Divider(),
-              const Text("Введіть фізіологічну анатомічну норму та фактичний кут руху пацієнта:", style: TextStyle(fontSize: 13)),
-              const SizedBox(height: 15),
               Row(
                 children: [
                   Expanded(child: TextField(controller: normController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Норма (°)", border: OutlineInputBorder()))),
@@ -832,7 +842,7 @@ class _ScalesCatalogScreenState extends State<ScalesCatalogScreen> {
 }
 
 // ==========================================
-// 4. КОНСТРУКТОР SMART-ЦІЛЕЙ (ПРИВ'ЯЗАНИЙ)
+// 4. КОНСТРУКТОР SMART-ЦІЛЕЙ
 // ==========================================
 class EmbeddedSmartGoalsScreen extends StatefulWidget {
   final List<PatientCard> patients;
@@ -869,9 +879,7 @@ class _EmbeddedSmartGoalsScreenState extends State<EmbeddedSmartGoalsScreen> {
 
   @override
   void dispose() {
-    for (var c in _controllers.values) {
-      c.dispose();
-    }
+    for (var c in _controllers.values) { c.dispose(); }
     super.dispose();
   }
 
@@ -1008,9 +1016,7 @@ class _EmbeddedIcdScreenState extends State<EmbeddedIcdScreen> {
       return;
     }
 
-    setState(() {
-      _targetPatient!.icdCodes.add(code);
-    });
+    setState(() { _targetPatient!.icdCodes.add(code); });
     widget.onIcdAssigned();
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1079,10 +1085,207 @@ class _EmbeddedIcdScreenState extends State<EmbeddedIcdScreen> {
 }
 
 // ==========================================
-// ЗАГЛУШКИ ДЛЯ НАСТУПНИХ СЕКЦІЙ
+// 6. ІНТЕРАКТИВНИЙ КАТАЛОГ ВПРАВ ТА ЛФК
 // ==========================================
-class ExercisesCatalogView extends StatelessWidget {
-  const ExercisesCatalogView({Key? key}) : super(key: key);
+class ExercisesCatalogView extends StatefulWidget {
+  final List<PatientCard> patients;
+  final VoidCallback onExercisesUpdated;
+
+  const ExercisesCatalogView({
+    Key? key,
+    required this.patients,
+    required this.onExercisesUpdated,
+  }) : super(key: key);
+
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Вправи та ЛФК"), backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white));
+  State<ExercisesCatalogView> createState() => _ExercisesCatalogViewState();
+}
+
+class _ExercisesCatalogViewState extends State<ExercisesCatalogView> {
+  String _searchQuery = "";
+  String _selectedCategory = "Всі";
+  PatientCard? _selectedPatient;
+
+  final List<String> _categories = ["Всі", "Нейрореабілітація", "Ортопедія", "Дихальна", "Ерготерапія"];
+
+  final List<Map<String, String>> _exercisesDb = [
+    {
+      "title": "Дзеркальна терапія для кисті",
+      "cat": "Нейрореабілітація",
+      "desc": "Стимуляція моторної кори головного мозку через зорову ілюзію здорової кінцівки.",
+      "dose": "15 хвилин, 2 рази на день.",
+      "warn": "Припинити при виникненні запаморочення чи ментального опору."
+    },
+    {
+      "title": "PNF-патерни для верхньої кінцівки",
+      "cat": "Нейрореабілітація",
+      "desc": "Пропріоцептивна нейром'язова фасилітація (діагональні рухи) для відновлення координації.",
+      "dose": "3 підходи по 10 повторень.",
+      "warn": "Контролювати стабільність плечового суглоба, уникати підвивиху."
+    },
+    {
+      "title": "Ізометричне скорочення чотириголового м'яза",
+      "cat": "Ортопедія",
+      "desc": "Напруження передньої поверхні стегна без руху в колінному суглобі (посттравматичний протокол).",
+      "dose": "Утримання 5 сек, 3 підходи по 15 разів.",
+      "warn": "Не затримувати дихання під час напруження."
+    },
+    {
+      "title": "Мобілізація гомілковостопного суглоба з резинкою",
+      "cat": "Ортопедія",
+      "desc": "Збільшення амплітуди тильного згинання стопи за допомогою еластичного опору.",
+      "dose": "20 повторень повільно, фіксація в кінцевій точці.",
+      "warn": "Уникати гострого болю у зоні сухожилля."
+    },
+    {
+      "title": "Діафрагмальне дихання з контролем видиху",
+      "cat": "Дихальна",
+      "desc": "Вентиляція нижніх часток легень, зниження активності допоміжних дихальних м'язів.",
+      "dose": "5-7 хвилин у положенні лежачи або напівсидячи.",
+      "warn": "При появі гіпервентиляції зробити паузу."
+    },
+    {
+      "title": "Тренування циліндричного та щипкового захватів",
+      "cat": "Ерготерапія",
+      "desc": "Робота з дрібними предметами, конусами чи ерготерапевтичним пластиліном для відновлення побутових навичок.",
+      "dose": "10 хвилин активних маніпуляцій.",
+      "warn": "Стежити за правильним протиставленням великого пальця."
+    }
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.patients.isNotEmpty) {
+      _selectedPatient = widget.patients.first;
+    }
+  }
+
+  void _assignExerciseToPatient(String exerciseTitle, String dosage) {
+    if (_selectedPatient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Оберіть пацієнта для призначення")));
+      return;
+    }
+
+    String fullAssignment = "$exerciseTitle ($dosage)";
+    
+    if (_selectedPatient!.assignedExercises.contains(fullAssignment)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Ця вправа вже є в програмі")));
+      return;
+    }
+
+    setState(() { _selectedPatient!.assignedExercises.add(fullAssignment); });
+    widget.onExercisesUpdated();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Вправу додано до програми пацієнта: ${_selectedPatient!.fullName}")),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _exercisesDb.where((ex) {
+      final matchesCat = _selectedCategory == "Всі" || ex["cat"] == _selectedCategory;
+      final matchesSearch = ex["title"]!.toLowerCase().contains(_searchQuery.toLowerCase()) || ex["desc"]!.toLowerCase().contains(_searchQuery.toLowerCase());
+      return matchesCat && matchesSearch;
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Каталог ЛФК та Призначення"), backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("1. Оберіть пацієнта для формування комплексу:", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(8), color: Colors.white),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<PatientCard>(
+                  value: _selectedPatient,
+                  isExpanded: true,
+                  items: widget.patients.map((PatientCard p) {
+                    return DropdownMenuItem<PatientCard>(value: p, child: Text(p.fullName, style: const TextStyle(fontSize: 13)));
+                  }).toList(),
+                  onChanged: (val) => setState(() => _selectedPatient = val),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              decoration: const InputDecoration(labelText: "Пошук вправи за назвою чи показаннями", prefixIcon: Icon(Icons.search), border: OutlineInputBorder()),
+              onChanged: (val) => setState(() => _searchQuery = val),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 38,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final c = _categories[index];
+                  final isSelected = _selectedCategory == c;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: ChoiceChip(
+                      label: Text(c, style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 11)),
+                      selected: isSelected,
+                      selectedColor: Colors.purple.shade600,
+                      onSelected: (val) => setState(() => _selectedCategory = c),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: filtered.isEmpty
+                  ? const Center(child: Text("Вправ не знайдено"))
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final ex = filtered[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          child: ExpansionTile(
+                            leading: Icon(Icons.fitness_center, color: Colors.purple.shade400),
+                            title: Text(ex["title"]!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            subtitle: Text("Категорія: ${ex["cat"]}", style: const TextStyle(fontSize: 11)),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("📝 Опис: ${ex["desc"]}", style: const TextStyle(fontSize: 12)),
+                                    const SizedBox(height: 4),
+                                    Text("⏱️ Дозування: ${ex["dose"]}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green)),
+                                    const SizedBox(height: 4),
+                                    Text("⚠️ Застереження: ${ex["warn"]}", style: const TextStyle(fontSize: 12, color: Colors.redAccent)),
+                                    const Divider(),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600),
+                                        onPressed: () => _assignExerciseToPatient(ex["title"]!, ex["dose"]!),
+                                        icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                                        label: const Text("Призначити пацієнту", style: TextStyle(color: Colors.white, fontSize: 12)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
