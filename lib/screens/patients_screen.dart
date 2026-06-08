@@ -602,9 +602,9 @@ class _PatientCardDetailScreenState extends State<PatientCardDetailScreen> {
                                                   double scoreValue = match != null ? double.parse(match.group(0)!) : 50.0;
                                                   
                                                   patient.scaleHistory.add(ScaleHistoryPoint(
-                                                    date: DateTime.now(),
+                                                   date: DateTime.now(),
                                                     scaleName: scaleName,
-                                                    score: scoreValue,
+                                                    score: scoreValue.toString(),
                                                   ));
                                                 });
                                                 widget.onUpdate();
